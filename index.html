@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0a1628;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+
+/* HEADER */
+.header{background:#0d1f3c;border-bottom:1px solid #1e3a5f;padding:0.6rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.header-title{font-size:1rem;font-weight:600;color:#e2e8f0;}
+.header-sub{font-size:0.68rem;color:#64748b;margin-top:1px;}
+.header-author{font-size:0.68rem;color:#64748b;margin-top:1px;}
+.header-author strong{color:#94a3b8;font-weight:600;}
+.header-right{display:flex;align-items:center;gap:10px;}
+.search-bar{display:flex;align-items:center;gap:7px;background:#1a2d4a;border:1px solid #2d4a6a;border-radius:7px;padding:5px 10px;width:210px;}
+.search-bar input{background:none;border:none;outline:none;color:#e2e8f0;font-size:12px;width:100%;}
+.search-bar input::placeholder{color:#4a6080;}
+
+/* NAV TABS */
+.nav-tabs{display:flex;gap:4px;background:#0a1628;border-bottom:1px solid #1e3a5f;padding:0 1.25rem;flex-shrink:0;}
+.nav-tab{padding:8px 16px;font-size:12px;font-weight:500;cursor:pointer;color:#64748b;border-bottom:2px solid transparent;transition:all 0.15s;white-space:nowrap;}
+.nav-tab:hover{color:#94a3b8;}
+.nav-tab.active{color:#60a5fa;border-bottom-color:#60a5fa;}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sidebar-wrap{display:flex;flex-direction:column;background:#0d1f3c;border-right:1px solid #1e3a5f;flex-shrink:0;transition:width 0.25s ease;width:200px;overflow:hidden;}
+.sidebar-wrap.collapsed{width:36px;}
+.sidebar-toggle{flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px;cursor:pointer;border-bottom:1px solid #1e3a5f;color:#4a6080;font-size:14px;transition:color 0.15s;}
+.sidebar-toggle:hover{color:#60a5fa;}
+.sidebar-inner{overflow-y:auto;flex:1;white-space:nowrap;}
+.sidebar-all{padding:5px 14px;font-size:12px;color:#94a3b8;cursor:pointer;border-left:2px solid transparent;}
+.sidebar-all:hover,.sidebar-all.active{color:#60a5fa;border-left-color:#60a5fa;background:#1a2d4a;}
+.sidebar-area{padding:7px 14px;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;color:#4a6080;cursor:pointer;display:flex;align-items:center;justify-content:space-between;}
+.sidebar-area:hover{color:#94a3b8;}
+.sidebar-area .arr{font-size:9px;transition:transform 0.2s;display:inline-block;}
+.sidebar-area.open .arr{transform:rotate(90deg);}
+.sidebar-diseases{display:none;}
+.sidebar-diseases.open{display:block;}
+.sidebar-disease{padding:5px 14px 5px 24px;font-size:12px;color:#94a3b8;cursor:pointer;border-left:2px solid transparent;transition:all 0.15s;}
+.sidebar-disease:hover{color:#e2e8f0;background:#1a2d4a;}
+.sidebar-disease.active{color:#60a5fa;border-left-color:#60a5fa;background:#1a2d4a;}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;padding:1rem 1.25rem 0;}
+.page{display:none;flex:1;flex-direction:column;overflow:hidden;}
+.page.active{display:flex;}
+
+/* PIPELINE PAGE */
+.top-section{flex-shrink:0;}
+.page-title{font-size:0.9rem;font-weight:600;color:#e2e8f0;margin-bottom:1px;}
+.page-desc{font-size:11px;color:#64748b;margin-bottom:0.65rem;}
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:0.65rem;}
+.stat-card{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:7px;padding:7px 10px;text-align:center;}
+.stat-num{font-size:1.15rem;font-weight:700;}
+.stat-label{font-size:10px;color:#64748b;margin-top:1px;}
+.stat-approved .stat-num{color:#34d399;}
+.stat-p3 .stat-num{color:#60a5fa;}
+.stat-p2 .stat-num{color:#fbbf24;}
+.stat-p1 .stat-num{color:#fb923c;}
+.stat-disc .stat-num{color:#f87171;}
+
+/* MARKET PANEL */
+.market-panel{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:8px;padding:10px 14px;margin-bottom:0.65rem;display:none;}
+.market-panel.visible{display:block;}
+.mp-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:#4a6080;margin-bottom:8px;}
+.mp-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px;}
+.mp-metric{background:#0a1628;border-radius:6px;padding:7px 10px;}
+.mp-metric-label{font-size:10px;color:#64748b;margin-bottom:2px;}
+.mp-metric-value{font-size:13px;font-weight:700;}
+.mp-metric-sub{font-size:10px;color:#94a3b8;margin-top:1px;}
+.mp-cagr{color:#34d399;}.mp-patients{color:#60a5fa;}.mp-mktsize{color:#fbbf24;}.mp-future{color:#a78bfa;}
+.mp-note{font-size:10px;color:#4a6080;font-style:italic;border-top:1px solid #1e3a5f;padding-top:5px;}
+.capture-section{margin-bottom:0.65rem;display:none;}
+.capture-section.visible{display:block;}
+.capture-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:#4a6080;margin-bottom:5px;}
+.capture-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(195px,1fr));gap:6px;}
+.capture-card{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:7px;padding:7px 10px;}
+.capture-drug{font-size:12px;font-weight:600;color:#e2e8f0;margin-bottom:2px;}
+.capture-bar-wrap{height:4px;background:#132133;border-radius:3px;overflow:hidden;margin:4px 0;}
+.capture-bar{height:100%;border-radius:3px;}
+.capture-meta{display:flex;justify-content:space-between;font-size:10px;color:#64748b;}
+
+/* FILTERS + TABLE */
+.filters{display:flex;gap:6px;margin-bottom:0.65rem;flex-wrap:wrap;flex-shrink:0;align-items:center;}
+.filter-btn{padding:3px 9px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid #2d4a6a;background:transparent;color:#94a3b8;transition:all 0.15s;}
+.filter-btn:hover{border-color:#60a5fa;color:#60a5fa;}
+.filter-btn.active{background:#1e3a5f;border-color:#60a5fa;color:#60a5fa;font-weight:500;}
+.filter-label{font-size:11px;color:#64748b;}
+.table-container{flex:1;overflow:hidden;border:1px solid #1e3a5f;border-radius:9px;display:flex;flex-direction:column;margin-bottom:0.75rem;}
+.table-scroll{overflow-y:auto;flex:1;}
+table{width:100%;border-collapse:collapse;}
+thead{position:sticky;top:0;z-index:10;}
+thead th{padding:7px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:#4a6080;background:#0a1628;border-bottom:1px solid #1e3a5f;white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:#94a3b8;}
+thead th.sort-asc .si::after{content:" ▲";font-size:8px;color:#60a5fa;}
+thead th.sort-desc .si::after{content:" ▼";font-size:8px;color:#60a5fa;}
+thead th .si::after{content:" ⇅";font-size:8px;color:#2d4a6a;}
+tbody tr{border-bottom:1px solid #132133;transition:background 0.1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#132133;}
+tbody td{padding:7px 10px;font-size:12px;color:#cbd5e1;vertical-align:middle;}
+.drug-name{font-weight:600;color:#e2e8f0;font-size:12px;}
+.drug-generic{font-size:10px;color:#64748b;margin-top:1px;}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap;}
+.badge-approved{background:#064e3b;color:#34d399;}
+.badge-phase3{background:#1e3a5f;color:#60a5fa;}
+.badge-phase2{background:#3d2c00;color:#fbbf24;}
+.badge-phase1{background:#3d1a00;color:#fb923c;}
+.badge-disc{background:#3d0000;color:#f87171;}
+.badge-nda{background:#1a1a3d;color:#a78bfa;}
+.phase-bar{display:flex;gap:3px;align-items:center;}
+.phase-dot{width:7px;height:7px;border-radius:50%;background:#1e3a5f;}
+.pd-approved{background:#34d399;}.pd-phase3{background:#60a5fa;}.pd-phase2{background:#fbbf24;}.pd-phase1{background:#fb923c;}.pd-nda{background:#a78bfa;}
+.moa-tag{background:#132133;border:1px solid #1e3a5f;border-radius:4px;padding:1px 6px;font-size:10px;color:#94a3b8;}
+.no-results{text-align:center;padding:2rem;color:#4a6080;font-size:13px;background:#0d1f3c;}
+
+/* ACCOUNT PAGE */
+.account-page{flex:1;overflow-y:auto;padding-bottom:1rem;}
+.account-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;}
+.account-select-wrap{display:flex;align-items:center;gap:10px;}
+.account-select-wrap label{font-size:12px;color:#64748b;}
+select.acct-sel{background:#0d1f3c;border:1px solid #2d4a6a;color:#e2e8f0;border-radius:7px;padding:6px 10px;font-size:13px;font-weight:500;outline:none;cursor:pointer;}
+select.acct-sel:hover{border-color:#60a5fa;}
+.acct-summary-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1rem;}
+.acct-stat{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:8px;padding:10px 14px;}
+.acct-stat-label{font-size:10px;color:#64748b;margin-bottom:3px;}
+.acct-stat-value{font-size:1.2rem;font-weight:700;color:#e2e8f0;}
+.acct-stat-sub{font-size:10px;color:#94a3b8;margin-top:2px;}
+
+/* Pipeline cards for account */
+.acct-drugs-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:8px;margin-bottom:1rem;}
+.acct-drug-card{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:8px;padding:10px 12px;}
+.acct-drug-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:5px;}
+.acct-drug-name{font-size:13px;font-weight:600;color:#e2e8f0;}
+.acct-drug-brand{font-size:10px;color:#64748b;margin-top:1px;}
+.acct-drug-disease{font-size:10px;color:#60a5fa;margin-bottom:5px;}
+.acct-drug-moa{font-size:10px;color:#94a3b8;padding:2px 6px;background:#132133;border:1px solid #1e3a5f;border-radius:4px;display:inline-block;margin-bottom:6px;}
+.acct-prog{height:3px;background:#132133;border-radius:2px;overflow:hidden;margin-bottom:3px;}
+.acct-prog-bar{height:100%;border-radius:2px;}
+
+/* PLAYBOOK */
+.section-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:#4a6080;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+.section-title::after{content:'';flex:1;height:1px;background:#1e3a5f;}
+.playbook-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;margin-bottom:1rem;}
+.pb-card{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:9px;padding:12px 14px;}
+.pb-card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.pb-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+.pb-card-title{font-size:13px;font-weight:600;color:#e2e8f0;}
+.pb-card-sub{font-size:10px;color:#64748b;}
+.pb-items{list-style:none;}
+.pb-items li{font-size:11.5px;color:#94a3b8;padding:4px 0;border-bottom:1px solid #132133;display:flex;align-items:flex-start;gap:6px;}
+.pb-items li:last-child{border-bottom:none;}
+.pb-items li::before{content:'→';color:#4a6080;flex-shrink:0;margin-top:1px;}
+.pb-tag{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-left:4px;}
+.tag-high{background:#064e3b;color:#34d399;}
+.tag-med{background:#3d2c00;color:#fbbf24;}
+.tag-low{background:#1e3a5f;color:#60a5fa;}
+
+/* Opp score */
+.opp-score-wrap{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:9px;padding:12px 14px;margin-bottom:1rem;}
+.opp-score-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.7px;color:#4a6080;margin-bottom:10px;}
+.opp-row{display:flex;align-items:center;gap:10px;margin-bottom:6px;}
+.opp-label{font-size:11.5px;color:#94a3b8;width:160px;flex-shrink:0;}
+.opp-bar-wrap{flex:1;height:6px;background:#132133;border-radius:3px;overflow:hidden;}
+.opp-bar{height:100%;border-radius:3px;}
+.opp-score{font-size:11.5px;font-weight:600;width:36px;text-align:right;}
+
+/* RWD */
+.rwd-panel{background:#0d1f3c;border:1px solid #1e3a5f;border-radius:9px;padding:12px 14px;margin-bottom:1rem;}
+.rwd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:8px;margin-top:8px;}
+.rwd-card{background:#0a1628;border-radius:6px;padding:8px 10px;}
+.rwd-card-title{font-size:11px;font-weight:600;color:#e2e8f0;margin-bottom:4px;}
+.rwd-card-body{font-size:10.5px;color:#94a3b8;line-height:1.5;}
+.rwd-badge{display:inline-block;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:600;margin-bottom:4px;}
+.rwd-emr{background:#0f2a4a;color:#60a5fa;}
+.rwd-claims{background:#2a1a0f;color:#fb923c;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Drug Pipeline Tracker</div>
+    <div class="header-sub">Oncology &amp; Hematology · Market Intelligence · Updated April 2025</div>
+    <div class="header-author">Created by <strong>Arpit Kashyap</strong></div>
+  </div>
+  <div class="header-right">
+    <div class="search-bar" id="searchBarWrap">
+      <svg width="13" height="13" fill="none" stroke="#4a6080" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search drug, company, MoA..." oninput="renderAll()">
+    </div>
+  </div>
+</div>
+
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchPage('pipeline',this)">Pipeline Explorer</div>
+  <div class="nav-tab" onclick="switchPage('accounts',this)">Account Intelligence</div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar-wrap" id="sidebarWrap">
+    <div class="sidebar-toggle" onclick="toggleSidebar()" id="sidebarToggle" title="Toggle sidebar">&#9776;</div>
+    <div class="sidebar-inner" id="sidebarInner">
+      <div id="sidebar"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- PAGE: PIPELINE -->
+    <div class="page active" id="page-pipeline">
+      <div class="top-section">
+        <div class="page-title" id="pageTitle">All Disease States</div>
+        <div class="page-desc" id="pageDesc">Showing all approved drugs and pipeline candidates across all disease states</div>
+        <div class="stats-row" id="statsRow"></div>
+      </div>
+      <div class="market-panel" id="marketPanel">
+        <div class="mp-title" id="mpTitle">Market Intelligence</div>
+        <div class="mp-grid" id="mpGrid"></div>
+        <div class="mp-note" id="mpNote"></div>
+      </div>
+      <div class="capture-section" id="captureSection">
+        <div class="capture-title">Approved Product Market Capture — <span id="captureDiseaseLabel"></span></div>
+        <div class="capture-grid" id="captureGrid"></div>
+      </div>
+      <div class="filters">
+        <span class="filter-label">Filter:</span>
+        <button class="filter-btn active" onclick="setFilter('All',this)">All</button>
+        <button class="filter-btn" onclick="setFilter('Approved',this)">Approved</button>
+        <button class="filter-btn" onclick="setFilter('NDA/BLA',this)">NDA/BLA</button>
+        <button class="filter-btn" onclick="setFilter('Phase 3',this)">Phase 3</button>
+        <button class="filter-btn" onclick="setFilter('Phase 2',this)">Phase 2</button>
+        <button class="filter-btn" onclick="setFilter('Phase 1',this)">Phase 1</button>
+        <button class="filter-btn" onclick="setFilter('Discontinued',this)">Discontinued</button>
+      </div>
+      <div class="table-container">
+        <div class="table-scroll">
+          <table>
+            <thead><tr>
+              <th onclick="sortBy('name')" id="th-name"><span class="si">Drug / Brand</span></th>
+              <th onclick="sortBy('disease')" id="th-disease"><span class="si">Disease</span></th>
+              <th onclick="sortBy('company')" id="th-company"><span class="si">Company</span></th>
+              <th onclick="sortBy('moa')" id="th-moa"><span class="si">Mechanism</span></th>
+              <th onclick="sortBy('target')" id="th-target"><span class="si">Target</span></th>
+              <th onclick="sortBy('phase')" id="th-phase"><span class="si">Phase</span></th>
+              <th>Progress</th>
+              <th onclick="sortBy('year')" id="th-year"><span class="si">Approval / Est.</span></th>
+            </tr></thead>
+            <tbody id="drugTable"></tbody>
+          </table>
+          <div class="no-results" id="noResults" style="display:none;">No drugs match your filters.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: ACCOUNTS -->
+    <div class="page" id="page-accounts">
+      <div class="account-page" id="accountPage">
+        <div class="account-header">
+          <div class="account-select-wrap">
+            <label>Select Account:</label>
+            <select class="acct-sel" id="acctSelect" onchange="renderAccount()"></select>
+          </div>
+          <div style="font-size:11px;color:#4a6080;">RWD sources: EMR · Claims · Oncology EHR</div>
+        </div>
+        <div id="accountContent"></div>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /layout -->
+
+<script>
+const areas={
+  "Uro-Oncology":{desc:"Genitourinary cancers",diseases:["Prostate Cancer","Bladder Cancer","Renal Cell Carcinoma"]},
+  "Hematologic Oncology":{desc:"Blood & bone marrow",diseases:["Multiple Myeloma","Acute Myeloid Leukemia","Chronic Lymphocytic Leukemia"]},
+  "Solid Tumors":{desc:"Non-hematologic solid tumors",diseases:["Non-Small Cell Lung Cancer","Breast Cancer","Colorectal Cancer"]},
+  "Rare & Orphan":{desc:"Rare disease designations",diseases:["Myelofibrosis","Cholangiocarcinoma"]}
+};
+
+const marketData={
+  "Prostate Cancer":{marketSize2024:"$17.0B",marketSize2030:"$32.0B",cagr:"10.9%",patients:"1.4M new/yr globally",horizon:"2030",note:"AR inhibitors, PSMA-targeted therapies (Pluvicto), and PARP inhibitors in HRR-mutated patients driving growth. Hormonal therapy commands ~89% revenue share.",captures:[{drug:"Enzalutamide (Xtandi)",pct:34,rev:"~$5.8B (2023)",line:"mCSPC / mCRPC"},{drug:"Abiraterone (Zytiga)",pct:22,rev:"~$3.7B (2023)",line:"mCRPC"},{drug:"Darolutamide (Nubeqa)",pct:8,rev:"~$1.4B (2023)",line:"nmCRPC / mCSPC"},{drug:"Lutetium-177 (Pluvicto)",pct:6,rev:"~$980M (2023)",line:"mCRPC post-ARPI"},{drug:"Olaparib (Lynparza)",pct:5,rev:"~$850M (2023)",line:"BRCAm mCRPC"}]},
+  "Bladder Cancer":{marketSize2024:"$6.4B",marketSize2030:"$10.1B",cagr:"5.9%",patients:"~573K new/yr globally",horizon:"2032",note:"EV+pembro combination reshaping first-line mUC. ADC approvals driving premium pricing. Immunotherapy is fastest-growing segment.",captures:[{drug:"Enfortumab Vedotin (Padcev)",pct:28,rev:"~$1.8B (2023)",line:"mUC post-platinum"},{drug:"Pembrolizumab (Keytruda)",pct:23,rev:"~$1.5B (2023)",line:"1L mUC / NMIBC"},{drug:"Erdafitinib (Balversa)",pct:7,rev:"~$440M (2023)",line:"FGFR2/3+ mUC"}]},
+  "Renal Cell Carcinoma":{marketSize2024:"$4.6B",marketSize2030:"$7.3B",cagr:"4.2%",patients:"~430K new/yr globally",horizon:"2034",note:"IO-combination regimens dominate 1L ccRCC. Belzutifan expanding into non-VHL settings. Market concentrated in top 5 agents.",captures:[{drug:"Nivo + Ipi",pct:22,rev:"~$1.0B (2023)",line:"1L ccRCC (I/M risk)"},{drug:"Pembro + Lenvatinib",pct:20,rev:"~$920M (2023)",line:"1L ccRCC (all risk)"},{drug:"Cabozantinib (Cabometyx)",pct:18,rev:"~$830M (2023)",line:"2L+ ccRCC"},{drug:"Nivo + Cabo",pct:15,rev:"~$690M (2023)",line:"1L ccRCC"},{drug:"Belzutifan (Welireg)",pct:5,rev:"~$230M (2023)",line:"3L+ ccRCC"}]},
+  "Multiple Myeloma":{marketSize2024:"$27.8B",marketSize2030:"$35.5B",cagr:"8.1%",patients:"~176K new/yr globally",horizon:"2030",note:"Bispecifics and CAR-T moving into earlier lines. Daratumumab-based combos dominate 1L/2L. Cell therapy poised for 10%+ CAGR.",captures:[{drug:"Daratumumab (Darzalex)",pct:38,rev:"~$10.5B (2023)",line:"1L–4L+"},{drug:"Elranatamab (Elrexfio)",pct:4,rev:"~$1.1B (2023)",line:"4L+ RRMM"},{drug:"Teclistamab (Tecvayli)",pct:3,rev:"~$830M (2023)",line:"4L+ RRMM"},{drug:"Ciltacel (Carvykti)",pct:3,rev:"~$830M (2023)",line:"4L+ RRMM"},{drug:"Ide-cel (Abecma)",pct:2,rev:"~$555M (2023)",line:"4L+ RRMM"}]},
+  "Acute Myeloid Leukemia":{marketSize2024:"$3.2B",marketSize2030:"$6.0B",cagr:"11.1%",patients:"~22K new/yr (US)",horizon:"2030",note:"Fastest growing segment. Menin inhibitors, BCL-2+HMA combos, and FLT3 inhibitors driving innovation. Venetoclax+azacitidine is standard-of-care.",captures:[{drug:"Venetoclax + Aza",pct:35,rev:"~$1.1B (2023)",line:"1L unfit AML"},{drug:"Gilteritinib (Xospata)",pct:16,rev:"~$510M (2023)",line:"R/R FLT3+ AML"},{drug:"Ivosidenib (Tibsovo)",pct:9,rev:"~$290M (2023)",line:"IDH1m AML"},{drug:"Enasidenib (Idhifa)",pct:5,rev:"~$160M (2023)",line:"R/R IDH2m"},{drug:"Revumenib (Revuforj)",pct:4,rev:"~$130M (2023)",line:"R/R KMT2Ar"}]},
+  "Chronic Lymphocytic Leukemia":{marketSize2024:"$8.5B",marketSize2030:"$12.0B",cagr:"5.9%",patients:"~200K prevalent (US)",horizon:"2030",note:"BTK inhibitors and venetoclax dominate. Pirtobrutinib addressing covalent-BTKi-resistant patients. Non-covalent BTKi class accelerating.",captures:[{drug:"Ibrutinib (Imbruvica)",pct:30,rev:"~$2.55B (2023)",line:"1L/R/R CLL"},{drug:"Acalabrutinib (Calquence)",pct:22,rev:"~$1.87B (2023)",line:"1L/R/R CLL"},{drug:"Zanubrutinib (Brukinsa)",pct:15,rev:"~$1.28B (2023)",line:"1L/R/R CLL"},{drug:"Venetoclax + Obin",pct:12,rev:"~$1.02B (2023)",line:"1L CLL"},{drug:"Pirtobrutinib (Jaypirca)",pct:5,rev:"~$425M (2023)",line:"BTKi-pretreated"}]},
+  "Non-Small Cell Lung Cancer":{marketSize2024:"$21.5B",marketSize2030:"$43.9B",cagr:"12.7%",patients:"~537K globally (7MM)",horizon:"2030",note:"Largest oncology market by value. Keytruda and Tagrisso anchor first-line. KRAS G12C inhibitors growing. ADCs entering late pipeline.",captures:[{drug:"Osimertinib (Tagrisso)",pct:22,rev:"~$4.7B (2023)",line:"1L EGFRm"},{drug:"Pembrolizumab (Keytruda)",pct:21,rev:"~$4.5B (2023)",line:"1L PD-L1≥1%"},{drug:"Alectinib (Alecensa)",pct:8,rev:"~$1.7B (2023)",line:"1L ALK+"},{drug:"Sotorasib (Lumakras)",pct:5,rev:"~$1.1B (2023)",line:"2L KRAS G12C"},{drug:"Adagrasib (Krazati)",pct:4,rev:"~$860M (2023)",line:"2L KRAS G12C"}]},
+  "Breast Cancer":{marketSize2024:"$30.0B",marketSize2030:"$46.5B",cagr:"7.2%",patients:"~310K new/yr (US)",horizon:"2030",note:"ADCs (Enhertu, Trodelvy) transforming HER2+ and TNBC. Oral SERDs emerging for ESR1-mutated HR+. CDK4/6 inhibitors maintain backbone role.",captures:[{drug:"T-DXd (Enhertu)",pct:14,rev:"~$4.2B (2023)",line:"HER2+ / HER2-low"},{drug:"Sacituzumab Gov. (Trodelvy)",pct:8,rev:"~$2.4B (2023)",line:"TNBC / HR+ mBC"},{drug:"Olaparib (Lynparza)",pct:5,rev:"~$1.5B (2023)",line:"BRCAm HER2-"},{drug:"Elacestrant (Orserdu)",pct:3,rev:"~$900M (2023)",line:"ESR1m HR+"},{drug:"Capivasertib (Truqap)",pct:2,rev:"~$600M (2023)",line:"AKT-path HR+"}]},
+  "Colorectal Cancer":{marketSize2024:"$13.9B",marketSize2030:"$17.9B",cagr:"2.3%",patients:"~1.9M globally",horizon:"2035",note:"Slowest growth. KRAS-targeted combos newly approved. MSI-H subset benefits from checkpoint inhibitors. Pan-KRAS inhibitors in Phase 2.",captures:[{drug:"Bevacizumab (Avastin)",pct:20,rev:"~$2.8B (2023)",line:"1L mCRC + chemo"},{drug:"Cetuximab (Erbitux)",pct:14,rev:"~$1.95B (2023)",line:"RAS-wt mCRC"},{drug:"Pembrolizumab (Keytruda)",pct:7,rev:"~$975M (2023)",line:"1L MSI-H"},{drug:"Fruquintinib (Fruzaqla)",pct:4,rev:"~$556M (2023)",line:"3L+ mCRC"},{drug:"Adagrasib + Cetux",pct:2,rev:"~$278M (2023)",line:"KRAS G12C"}]},
+  "Myelofibrosis":{marketSize2024:"$952M",marketSize2030:"$1.2B",cagr:"3.5%",patients:"~21K prevalent (US)",horizon:"2030",note:"Ruxolitinib remains dominant. Momelotinib for anemic MF, pacritinib for low platelets. Combination strategies (pelabresib, navitoclax) in late-stage trials.",captures:[{drug:"Ruxolitinib (Jakafi)",pct:58,rev:"~$553M (2023)",line:"1L MF"},{drug:"Fedratinib (Inrebic)",pct:10,rev:"~$95M (2023)",line:"1L/2L MF"},{drug:"Pacritinib (Vonjo)",pct:8,rev:"~$76M (2023)",line:"Low platelet MF"},{drug:"Momelotinib (Ojjaara)",pct:6,rev:"~$57M (2023)",line:"MF with anemia"},{drug:"Imetelstat (Rytelo)",pct:3,rev:"~$29M (2024)",line:"Transfusion-dep MF"}]},
+  "Cholangiocarcinoma":{marketSize2024:"$1.0B",marketSize2030:"$2.0B",cagr:"9.7%",patients:"~8K new/yr (US)",horizon:"2035",note:"Fastest-growing rare oncology market. FGFR2 and IDH1 inhibitors are first targeted approvals. HER2 bispecific (zanidatamab) NDA filed.",captures:[{drug:"Pemigatinib (Pemazyre)",pct:28,rev:"~$280M (2023)",line:"FGFR2+ iCCA"},{drug:"Futibatinib (Lytgobi)",pct:18,rev:"~$180M (2023)",line:"FGFR2 fusion+"},{drug:"Ivosidenib (Tibsovo)",pct:14,rev:"~$140M (2023)",line:"IDH1m CCA"},{drug:"Infigratinib (Truseltiq)",pct:8,rev:"~$80M (2023)",line:"FGFR2+ iCCA"}]}
+};
+
+const phaseOrder={"Phase 1":1,"Phase 2":2,"Phase 3":3,"NDA/BLA":4,"Approved":5,"Discontinued":0};
+const drugs=[
+  {name:"Enzalutamide",brand:"Xtandi",company:"Pfizer/Astellas",disease:"Prostate Cancer",moa:"AR Antagonist",target:"Androgen Receptor",phase:"Approved",year:"2012"},
+  {name:"Abiraterone",brand:"Zytiga",company:"J&J",disease:"Prostate Cancer",moa:"CYP17A1 Inhibitor",target:"CYP17A1",phase:"Approved",year:"2011"},
+  {name:"Olaparib",brand:"Lynparza",company:"AstraZeneca/MSD",disease:"Prostate Cancer",moa:"PARP Inhibitor",target:"BRCA1/2, HRR",phase:"Approved",year:"2020"},
+  {name:"Darolutamide",brand:"Nubeqa",company:"Bayer/Orion",disease:"Prostate Cancer",moa:"AR Antagonist",target:"Androgen Receptor",phase:"Approved",year:"2019"},
+  {name:"Lutetium-177 PSMA-617",brand:"Pluvicto",company:"Novartis",disease:"Prostate Cancer",moa:"Radioligand Therapy",target:"PSMA",phase:"Approved",year:"2022"},
+  {name:"Cabozantinib + Atezolizumab",brand:"—",company:"Exelixis/Genentech",disease:"Prostate Cancer",moa:"MET/VEGFR2 + PD-L1 Inh",target:"MET, VEGFR2, PD-L1",phase:"Phase 3",year:"2026"},
+  {name:"Ziftomenib",brand:"—",company:"Kymera Therapeutics",disease:"Prostate Cancer",moa:"AR Degrader (PROTAC)",target:"Androgen Receptor",phase:"Phase 2",year:"2027"},
+  {name:"AMG 509",brand:"—",company:"Amgen",disease:"Prostate Cancer",moa:"BiTE (PSMA×CD3)",target:"PSMA, CD3",phase:"Phase 2",year:"2027"},
+  {name:"ONC201",brand:"—",company:"Oncoceutics",disease:"Prostate Cancer",moa:"DRD2/ClpP Agonist",target:"Mitochondrial ClpP",phase:"Phase 1",year:"2028"},
+  {name:"Enfortumab Vedotin",brand:"Padcev",company:"Seagen/Astellas",disease:"Bladder Cancer",moa:"ADC (MMAE)",target:"Nectin-4",phase:"Approved",year:"2019"},
+  {name:"Pembrolizumab",brand:"Keytruda",company:"MSD",disease:"Bladder Cancer",moa:"PD-1 Inhibitor",target:"PD-1",phase:"Approved",year:"2017"},
+  {name:"Erdafitinib",brand:"Balversa",company:"J&J",disease:"Bladder Cancer",moa:"FGFR Inhibitor",target:"FGFR2/3",phase:"Approved",year:"2019"},
+  {name:"Atezolizumab + EV",brand:"—",company:"Genentech/Seagen",disease:"Bladder Cancer",moa:"PD-L1 Inh + ADC",target:"PD-L1, Nectin-4",phase:"Phase 3",year:"2025"},
+  {name:"Disitamab Vedotin",brand:"RC48",company:"RemeGen",disease:"Bladder Cancer",moa:"ADC (MMAE)",target:"HER2",phase:"Phase 3",year:"2026"},
+  {name:"COVA322",brand:"—",company:"Covagen",disease:"Bladder Cancer",moa:"IL-17A/TNF Bispecific",target:"IL-17A, TNF",phase:"Phase 1",year:"2028"},
+  {name:"Nivolumab + Ipilimumab",brand:"Opdivo + Yervoy",company:"BMS",disease:"Renal Cell Carcinoma",moa:"PD-1 + CTLA-4 Inh",target:"PD-1, CTLA-4",phase:"Approved",year:"2018"},
+  {name:"Cabozantinib",brand:"Cabometyx",company:"Exelixis",disease:"Renal Cell Carcinoma",moa:"Multi-Kinase Inhibitor",target:"VEGFR, MET, AXL",phase:"Approved",year:"2016"},
+  {name:"Belzutifan",brand:"Welireg",company:"MSD",disease:"Renal Cell Carcinoma",moa:"HIF-2α Inhibitor",target:"HIF-2α",phase:"Approved",year:"2021"},
+  {name:"Pembrolizumab + Lenvatinib",brand:"Keytruda + Lenvima",company:"MSD/Eisai",disease:"Renal Cell Carcinoma",moa:"PD-1 + VEGFR Inh",target:"PD-1, VEGFR",phase:"Approved",year:"2021"},
+  {name:"Nivolumab + Cabozantinib",brand:"Opdivo + Cabometyx",company:"BMS/Exelixis",disease:"Renal Cell Carcinoma",moa:"PD-1 + Multi-Kinase Inh",target:"PD-1, VEGFR, MET",phase:"Approved",year:"2021"},
+  {name:"Belzutifan combos",brand:"—",company:"MSD",disease:"Renal Cell Carcinoma",moa:"HIF-2α + PD-1 Inh",target:"HIF-2α, PD-1",phase:"Phase 3",year:"2026"},
+  {name:"Daratumumab",brand:"Darzalex",company:"J&J",disease:"Multiple Myeloma",moa:"Anti-CD38 mAb",target:"CD38",phase:"Approved",year:"2015"},
+  {name:"Teclistamab",brand:"Tecvayli",company:"J&J",disease:"Multiple Myeloma",moa:"Bispecific (BCMA×CD3)",target:"BCMA, CD3",phase:"Approved",year:"2022"},
+  {name:"Ciltacabtagene autoleucel",brand:"Carvykti",company:"J&J/Legend",disease:"Multiple Myeloma",moa:"BCMA-targeted CAR-T",target:"BCMA",phase:"Approved",year:"2022"},
+  {name:"Idecabtagene vicleucel",brand:"Abecma",company:"BMS/2seventy",disease:"Multiple Myeloma",moa:"BCMA-targeted CAR-T",target:"BCMA",phase:"Approved",year:"2021"},
+  {name:"Elranatamab",brand:"Elrexfio",company:"Pfizer",disease:"Multiple Myeloma",moa:"Bispecific (BCMA×CD3)",target:"BCMA, CD3",phase:"Approved",year:"2023"},
+  {name:"Alnuctamab",brand:"—",company:"BMS",disease:"Multiple Myeloma",moa:"Bispecific (BCMA×CD3)",target:"BCMA, CD3",phase:"Phase 3",year:"2025"},
+  {name:"BMS-986393",brand:"—",company:"BMS",disease:"Multiple Myeloma",moa:"GPRC5D×CD3 Bispecific",target:"GPRC5D, CD3",phase:"Phase 2",year:"2026"},
+  {name:"Mezigdomide",brand:"CC-92480",company:"BMS",disease:"Multiple Myeloma",moa:"CELMoD",target:"IKZF1/3",phase:"NDA/BLA",year:"2025"},
+  {name:"Venetoclax + Azacitidine",brand:"Venclexta + Vidaza",company:"AbbVie/Genentech",disease:"Acute Myeloid Leukemia",moa:"BCL-2 Inh + HMA",target:"BCL-2",phase:"Approved",year:"2020"},
+  {name:"Enasidenib",brand:"Idhifa",company:"BMS/Agios",disease:"Acute Myeloid Leukemia",moa:"IDH2 Inhibitor",target:"IDH2",phase:"Approved",year:"2017"},
+  {name:"Ivosidenib",brand:"Tibsovo",company:"Servier/Agios",disease:"Acute Myeloid Leukemia",moa:"IDH1 Inhibitor",target:"IDH1",phase:"Approved",year:"2018"},
+  {name:"Gilteritinib",brand:"Xospata",company:"Astellas",disease:"Acute Myeloid Leukemia",moa:"FLT3 Inhibitor",target:"FLT3",phase:"Approved",year:"2018"},
+  {name:"Revumenib",brand:"Revuforj",company:"Syndax",disease:"Acute Myeloid Leukemia",moa:"Menin Inhibitor",target:"KMT2A, NPM1",phase:"Approved",year:"2023"},
+  {name:"Ziftomenib",brand:"—",company:"Kymera",disease:"Acute Myeloid Leukemia",moa:"Menin Inhibitor",target:"KMT2A",phase:"Phase 3",year:"2026"},
+  {name:"Bleximenib",brand:"JNJ-75276617",company:"J&J",disease:"Acute Myeloid Leukemia",moa:"Menin Inhibitor",target:"KMT2A, NPM1",phase:"Phase 2",year:"2027"},
+  {name:"Uproleselan",brand:"—",company:"GlycoMimetics",disease:"Acute Myeloid Leukemia",moa:"E-Selectin Antagonist",target:"E-Selectin",phase:"Phase 3",year:"2025"},
+  {name:"Magrolimab + Azacitidine",brand:"—",company:"Gilead",disease:"Acute Myeloid Leukemia",moa:"Anti-CD47 mAb + HMA",target:"CD47",phase:"Discontinued",year:"—"},
+  {name:"Ibrutinib",brand:"Imbruvica",company:"J&J/AbbVie",disease:"Chronic Lymphocytic Leukemia",moa:"BTK Inhibitor",target:"BTK",phase:"Approved",year:"2014"},
+  {name:"Acalabrutinib",brand:"Calquence",company:"AstraZeneca",disease:"Chronic Lymphocytic Leukemia",moa:"BTK Inhibitor",target:"BTK",phase:"Approved",year:"2019"},
+  {name:"Venetoclax + Obinutuzumab",brand:"Venclexta + Gazyva",company:"AbbVie/Roche",disease:"Chronic Lymphocytic Leukemia",moa:"BCL-2 + Anti-CD20 mAb",target:"BCL-2, CD20",phase:"Approved",year:"2019"},
+  {name:"Zanubrutinib",brand:"Brukinsa",company:"BeiGene",disease:"Chronic Lymphocytic Leukemia",moa:"BTK Inhibitor",target:"BTK",phase:"Approved",year:"2023"},
+  {name:"Pirtobrutinib",brand:"Jaypirca",company:"Lilly",disease:"Chronic Lymphocytic Leukemia",moa:"Non-Covalent BTK Inhibitor",target:"BTK",phase:"Approved",year:"2023"},
+  {name:"Epcoritamab",brand:"Epkinly",company:"Genmab/AbbVie",disease:"Chronic Lymphocytic Leukemia",moa:"Bispecific (CD20×CD3)",target:"CD20, CD3",phase:"Phase 3",year:"2026"},
+  {name:"Pirtobrutinib + Venetoclax",brand:"—",company:"Lilly/AbbVie",disease:"Chronic Lymphocytic Leukemia",moa:"BTK + BCL-2 Inh",target:"BTK, BCL-2",phase:"Phase 2",year:"2027"},
+  {name:"Osimertinib",brand:"Tagrisso",company:"AstraZeneca",disease:"Non-Small Cell Lung Cancer",moa:"EGFR Inhibitor (3rd gen)",target:"EGFR T790M",phase:"Approved",year:"2015"},
+  {name:"Alectinib",brand:"Alecensa",company:"Genentech/Roche",disease:"Non-Small Cell Lung Cancer",moa:"ALK Inhibitor",target:"ALK",phase:"Approved",year:"2015"},
+  {name:"Sotorasib",brand:"Lumakras",company:"Amgen",disease:"Non-Small Cell Lung Cancer",moa:"KRAS G12C Inhibitor",target:"KRAS G12C",phase:"Approved",year:"2021"},
+  {name:"Adagrasib",brand:"Krazati",company:"Mirati/BMS",disease:"Non-Small Cell Lung Cancer",moa:"KRAS G12C Inhibitor",target:"KRAS G12C",phase:"Approved",year:"2022"},
+  {name:"Patritumab Deruxtecan",brand:"HER3-DXd",company:"Daiichi Sankyo/AstraZeneca",disease:"Non-Small Cell Lung Cancer",moa:"ADC (Topo I Inh)",target:"HER3",phase:"NDA/BLA",year:"2025"},
+  {name:"Zipalertinib",brand:"—",company:"Cullinan Oncology",disease:"Non-Small Cell Lung Cancer",moa:"EGFR Exon 20 Inhibitor",target:"EGFR Exon 20",phase:"Phase 3",year:"2026"},
+  {name:"BBT-176",brand:"—",company:"Bridge Biotherapeutics",disease:"Non-Small Cell Lung Cancer",moa:"EGFR 4th gen Inhibitor",target:"EGFR C797S",phase:"Phase 1",year:"2028"},
+  {name:"Trastuzumab Deruxtecan",brand:"Enhertu",company:"Daiichi Sankyo/AstraZeneca",disease:"Breast Cancer",moa:"ADC (Topo I Inh)",target:"HER2",phase:"Approved",year:"2019"},
+  {name:"Sacituzumab Govitecan",brand:"Trodelvy",company:"Gilead",disease:"Breast Cancer",moa:"ADC (SN-38)",target:"TROP-2",phase:"Approved",year:"2021"},
+  {name:"Olaparib",brand:"Lynparza",company:"AstraZeneca/MSD",disease:"Breast Cancer",moa:"PARP Inhibitor",target:"BRCA1/2",phase:"Approved",year:"2018"},
+  {name:"Elacestrant",brand:"Orserdu",company:"Radius/Menarini",disease:"Breast Cancer",moa:"SERD (Oral)",target:"ESR1",phase:"Approved",year:"2023"},
+  {name:"Datopotamab Deruxtecan",brand:"Dato-DXd",company:"Daiichi Sankyo/AstraZeneca",disease:"Breast Cancer",moa:"ADC (Topo I Inh)",target:"TROP-2",phase:"NDA/BLA",year:"2025"},
+  {name:"Capivasertib + Fulvestrant",brand:"Truqap + Faslodex",company:"AstraZeneca",disease:"Breast Cancer",moa:"AKT Inhibitor + SERD",target:"AKT, ER",phase:"Approved",year:"2023"},
+  {name:"Inavolisib + Palbociclib",brand:"—",company:"Genentech",disease:"Breast Cancer",moa:"PI3Kα + CDK4/6 Inh",target:"PIK3CA, CDK4/6",phase:"Phase 3",year:"2026"},
+  {name:"Cetuximab",brand:"Erbitux",company:"Eli Lilly/BMS",disease:"Colorectal Cancer",moa:"Anti-EGFR mAb",target:"EGFR",phase:"Approved",year:"2004"},
+  {name:"Bevacizumab",brand:"Avastin",company:"Genentech/Roche",disease:"Colorectal Cancer",moa:"Anti-VEGF mAb",target:"VEGF-A",phase:"Approved",year:"2004"},
+  {name:"Pembrolizumab",brand:"Keytruda",company:"MSD",disease:"Colorectal Cancer",moa:"PD-1 Inhibitor",target:"PD-1, MSI-H",phase:"Approved",year:"2017"},
+  {name:"Adagrasib + Cetuximab",brand:"Krazati + Erbitux",company:"Mirati/BMS + Lilly",disease:"Colorectal Cancer",moa:"KRAS G12C + EGFR mAb",target:"KRAS G12C, EGFR",phase:"Approved",year:"2024"},
+  {name:"Fruquintinib",brand:"Fruzaqla",company:"Hutchmed/Takeda",disease:"Colorectal Cancer",moa:"VEGFR Inhibitor",target:"VEGFR1/2/3",phase:"Approved",year:"2023"},
+  {name:"RMC-6236",brand:"—",company:"Revolution Medicines",disease:"Colorectal Cancer",moa:"Pan-KRAS Inhibitor",target:"KRAS (multi)",phase:"Phase 2",year:"2027"},
+  {name:"Nivolumab + Relatlimab",brand:"Opdualag",company:"BMS",disease:"Colorectal Cancer",moa:"PD-1 + LAG-3 Inh",target:"PD-1, LAG-3",phase:"Phase 2",year:"2026"},
+  {name:"Ruxolitinib",brand:"Jakafi",company:"Incyte",disease:"Myelofibrosis",moa:"JAK1/2 Inhibitor",target:"JAK1/2",phase:"Approved",year:"2011"},
+  {name:"Fedratinib",brand:"Inrebic",company:"BMS",disease:"Myelofibrosis",moa:"JAK2/FLT3 Inhibitor",target:"JAK2",phase:"Approved",year:"2019"},
+  {name:"Pacritinib",brand:"Vonjo",company:"CTI BioPharma",disease:"Myelofibrosis",moa:"JAK2/IRAK1 Inhibitor",target:"JAK2, IRAK1",phase:"Approved",year:"2022"},
+  {name:"Momelotinib",brand:"Ojjaara",company:"GSK",disease:"Myelofibrosis",moa:"JAK1/2/ACVR1 Inhibitor",target:"JAK1/2, ACVR1",phase:"Approved",year:"2023"},
+  {name:"Imetelstat",brand:"Rytelo",company:"Geron",disease:"Myelofibrosis",moa:"Telomerase Inhibitor",target:"Telomerase",phase:"Approved",year:"2024"},
+  {name:"Navitoclax + Ruxolitinib",brand:"—",company:"AbbVie/Incyte",disease:"Myelofibrosis",moa:"BCL-2/XL + JAK1/2 Inh",target:"BCL-2/XL, JAK1/2",phase:"Phase 3",year:"2026"},
+  {name:"Pelabresib + Ruxolitinib",brand:"—",company:"Constellation/MorphoSys",disease:"Myelofibrosis",moa:"BET + JAK1/2 Inh",target:"BRD4, JAK1/2",phase:"Phase 3",year:"2026"},
+  {name:"Pemigatinib",brand:"Pemazyre",company:"Incyte",disease:"Cholangiocarcinoma",moa:"FGFR1/2/3 Inhibitor",target:"FGFR2",phase:"Approved",year:"2020"},
+  {name:"Infigratinib",brand:"Truseltiq",company:"QED Therapeutics",disease:"Cholangiocarcinoma",moa:"FGFR1/2/3 Inhibitor",target:"FGFR2",phase:"Approved",year:"2021"},
+  {name:"Ivosidenib",brand:"Tibsovo",company:"Servier/Agios",disease:"Cholangiocarcinoma",moa:"IDH1 Inhibitor",target:"IDH1",phase:"Approved",year:"2021"},
+  {name:"Futibatinib",brand:"Lytgobi",company:"Taiho/Astex",disease:"Cholangiocarcinoma",moa:"FGFR1-4 Inhibitor",target:"FGFR2",phase:"Approved",year:"2022"},
+  {name:"Zanidatamab",brand:"—",company:"Zymeworks/Jazz",disease:"Cholangiocarcinoma",moa:"HER2 Bispecific mAb",target:"HER2",phase:"NDA/BLA",year:"2025"},
+  {name:"RLY-4008",brand:"—",company:"Relay Therapeutics",disease:"Cholangiocarcinoma",moa:"FGFR2 Selective Inhibitor",target:"FGFR2",phase:"Phase 2",year:"2027"},
+];
+
+// ACCOUNT PLAYBOOK DATA
+const accountPlaybooks={
+  "AstraZeneca":{
+    focus:["NSCLC","Breast Cancer","CLL","Prostate Cancer"],
+    approvedCount:6, pipelineCount:4, diseases:["Non-Small Cell Lung Cancer","Breast Cancer","Chronic Lymphocytic Leukemia","Prostate Cancer"],
+    oppScore:{commercial:88,medicalAffairs:92,clinicalResearch:85,brandStrategy:80,hcpEngagement:90,policyAccess:72},
+    rwdInsights:[
+      {type:"EMR",title:"Osimertinib Treatment Patterns",body:"EMR data shows 68% of EGFRm NSCLC patients on Tagrisso as 1L. Identify patients progressing to 2L for Dato-DXd positioning."},
+      {type:"Claims",title:"ADC Prescriber Overlap",body:"Claims reveal 42% of oncologists prescribing Trodelvy also prescribe Enhertu — key targets for Dato-DXd launch."},
+      {type:"EMR",title:"Osimertinib Resistance Tracking",body:"EMR flags ~15% of Tagrisso patients developing C797S resistance — unmet need for 4th-gen EGFR inhibitors in pipeline."},
+      {type:"Claims",title:"Lynparza Off-Label Use",body:"Claims data showing emerging BRCA2m prostate prescriptions — opportunity to reinforce approved indication messaging."}
+    ],
+    playbook:{
+      commercial:{priority:"High",items:["Launch readiness planning for Dato-DXd (TROP-2) in HR+/HER2- mBC","Segment prescribers by ADC experience using claims data — target early adopters","Drive Tagrisso adjuvant uptake in resected EGFRm NSCLC stage IB-IIIA","Develop Lynparza + Xtandi combination pull-through in BRCAm mCRPC","Identify Calquence share-of-voice opportunity vs. zanubrutinib in CLL"]},
+      medicalAffairs:{priority:"High",items:["MSL engagement on osimertinib resistance mechanisms and 4th-gen pipeline","HEOR analysis of Tagrisso real-world OS data for payer submissions","Publish RWE from EMR on EGFRm NSCLC treatment duration and adherence","Scientific exchange on LAURA trial data (osimertinib in Stage III NSCLC)","Establish advisory boards on TROP-2 biology and ADC combination strategies"]},
+      clinicalResearch:{priority:"High",items:["Identify sites with high EGFRm NSCLC prevalence using EMR for clinical trial enrollment","RWD-enabled patient identification for TROPION-Breast01 follow-on studies","Claims-based cohort design for MARIPOSA-2 real-world validation","Partner with academic centers for osimertinib + immunotherapy combination data","Site feasibility using EMR: EGFR+/ALK+ co-alteration NSCLC patients"]},
+      brandStrategy:{priority:"Medium",items:["Tagrisso as 'total EGFR journey' brand — from early stage to metastatic","Dato-DXd brand identity: TROP-2 precision + better tolerability vs. Trodelvy","Calquence differentiation: safer cardiovascular profile vs. ibrutinib in CLL","Develop patient journey maps from claims: diagnosis → treatment → resistance"]},
+      hcpEngagement:{priority:"High",items:["Tier 1 oncologists: osimertinib + Dato-DXd combination education","Community oncologists: adjuvant Tagrisso awareness — lower baseline","Pulmonologists: EGFRm NSCLC screening and biomarker testing pull-through","Hematologists: Calquence in BTKi-naïve and switch patients from ibrutinib","Digital engagement: webinar series on TROP-2 ADC clinical differentiation"]},
+      policyAccess:{priority:"Medium",items:["Payer contracting strategy for Dato-DXd: value-based pricing tied to PFS","EMR-based prior authorization burden analysis for Tagrisso adjuvant","Develop market access dossier for TROP-2 segment: claims cost-effectiveness data","State Medicaid coverage expansion for Calquence in treatment-naïve CLL"]}
+    }
+  },
+  "BMS":{
+    focus:["Multiple Myeloma","RCC","AML","CRC","Myelofibrosis"],
+    approvedCount:8, pipelineCount:5, diseases:["Multiple Myeloma","Renal Cell Carcinoma","Acute Myeloid Leukemia","Colorectal Cancer","Myelofibrosis"],
+    oppScore:{commercial:85,medicalAffairs:88,clinicalResearch:90,brandStrategy:78,hcpEngagement:82,policyAccess:70},
+    rwdInsights:[
+      {type:"EMR",title:"Abecma vs Carvykti Treatment Selection",body:"EMR data shows CAR-T selection driven by site certification and patient fitness scores — opportunity to support site capacity building."},
+      {type:"Claims",title:"Opdivo + Yervoy Real-World Adherence",body:"Claims show 78% of nivo+ipi patients complete 4 cycles in ccRCC — reinforce durability data vs. TKI combinations."},
+      {type:"EMR",title:"Enasidenib Discontinuation Patterns",body:"EMR shows 30% of IDH2m AML patients discontinue Idhifa within 3 months — MSL support opportunity."},
+      {type:"Claims",title:"Myeloma Line of Therapy Mapping",body:"Claims data maps patient flow across myeloma lines — identify patients approaching CAR-T eligibility at 4L+."}
+    ],
+    playbook:{
+      commercial:{priority:"High",items:["Drive Abecma 2L MM expansion — position earlier vs. bispecifics using OS data","Nivolumab + relatlimab in CRC: target MSS patients with high tumor burden","Alnuctamab launch preparation: define bispecific-experienced vs. naïve segments","Fedratinib positioning in JAKi-failed MF patients via EMR-based identification","Mezigdomide NDA readiness: define CELMoD formulary access strategy"]},
+      medicalAffairs:{priority:"High",items:["Publish real-world CAR-T outcomes data (EMR) for Abecma in community vs. academic","MSL education on CAR-T vs. bispecific sequencing in 4L+ MM","Scientific platform for LAG-3 pathway (Opdualag) expansion beyond melanoma","AML field medical: IDH2m diagnosis rate and testing gap analysis using EMR","HEOR: cost-per-remission analysis for Abecma vs. bispecifics in MM"]},
+      clinicalResearch:{priority:"High",items:["EMR-based patient identification for KarMMa-4 (earlier line ide-cel in MM)","Claims cohort for Opdivo+Yervoy real-world vs. CHECKMATE-214 outcomes","Myelofibrosis combination trial sites: pelabresib + ruxolitinib site feasibility","RWD to support FDA submission for nivolumab in MSS CRC (LAG-3 signal)","AML registry: EMR-based IDH2 mutation prevalence and treatment gap study"]},
+      brandStrategy:{priority:"Medium",items:["Abecma: 'deep remission, fixed duration' — contrast with indefinite bispecific therapy","Opdivo portfolio: 'IO backbone across cancer types' brand architecture","BMS hematology: end-to-end myeloma journey from daratumumab to CAR-T","Fedratinib: 'your second JAK inhibitor' — clear positioning vs. ruxolitinib switch"]},
+      hcpEngagement:{priority:"High",items:["CAR-T certified centers: apheresis coordinators + hematology nursing education","Community hematologists: bispecific administration setup support for Tecvayli/Alnuctamab","GI oncologists: nivolumab + relatlimab combination education for CRC","MF specialists: pelabresib combination trial enrollment and data sharing","Oncology pharmacists: Mezigdomide CELMoD dosing and safety profile education"]},
+      policyAccess:{priority:"Medium",items:["CAR-T coverage: work with payers on outcomes-based contracts tied to MRD negativity","Bispecific step-edit policy reduction: claims data showing prior treatment burden","Opdivo J-code reimbursement optimization in community oncology","MF: rare disease access pathway for pacritinib in low-platelet patient subgroup"]}
+    }
+  },
+  "J&J":{
+    focus:["Multiple Myeloma","Prostate Cancer","Bladder Cancer","AML"],
+    approvedCount:7, pipelineCount:3, diseases:["Multiple Myeloma","Prostate Cancer","Bladder Cancer","Acute Myeloid Leukemia"],
+    oppScore:{commercial:90,medicalAffairs:85,clinicalResearch:88,brandStrategy:85,hcpEngagement:88,policyAccess:80},
+    rwdInsights:[
+      {type:"Claims",title:"Darzalex Market Share by Line",body:"Claims show Darzalex used in 74% of 1L MM patients — deepening combo regimens (DaraVRd) represent next pull-through."},
+      {type:"EMR",title:"Xtandi Duration of Therapy",body:"EMR shows average Xtandi duration of 9.2 months in mCRPC — identify patients nearing progression for Pluvicto sequencing."},
+      {type:"EMR",title:"Erdafitinib Patient Selection",body:"EMR shows only 38% of bladder cancer patients receive FGFR2/3 testing — biomarker testing gap is major BD opportunity."},
+      {type:"Claims",title:"Carvykti Referral Patterns",body:"Claims show 60% of Carvykti referrals originate from academic centers — community expansion program needed."}
+    ],
+    playbook:{
+      commercial:{priority:"High",items:["Darzalex early-line pull-through: push DaraVRd as transplant-eligible standard","Tecvayli + Carvykti segmentation: bispecific for frail patients, CAR-T for fit patients","Xtandi in mCSPC expansion: claims-based identification of hormone-sensitive market","Balversa: close the FGFR2/3 testing gap — companion diagnostic pull-through strategy","Bleximenib launch prep: differentiate menin inhibitor for NPM1m AML vs. revumenib"]},
+      medicalAffairs:{priority:"High",items:["MSL education on daratumumab MRD negativity as treatment endpoint","Real-world Carvykti outcomes: EMR-based response and duration in community settings","Scientific exchange on PSMA PET imaging for Pluvicto patient identification","Bleximenib (AML): educate hematologists on menin inhibitor mechanism and NPM1m testing","Xtandi: publish RWE on cardiac safety vs. abiraterone using claims data"]},
+      clinicalResearch:{priority:"High",items:["Carvykti 2L MM trial (CARTITUDE-4) site expansion using EMR eligibility data","PSMA testing gap analysis: EMR to identify mCRPC patients not receiving imaging","Bladder cancer: FGFR2/3 testing prevalence study via EMR to inform trial design","Bleximenib Phase 2 expansion: NPM1m AML patient identification in EMR","Daratumumab MRD endpoint validation: EMR-based long-term follow-up analysis"]},
+      brandStrategy:{priority:"High",items:["Darzalex: 'the backbone of myeloma therapy' across all lines and regimens","Carvykti: 'one treatment, long remission' — reinforce fixed-duration CAR-T advantage","Xtandi/Erleada: 'complete androgen blockade journey' brand architecture","J&J hematology: 'from diagnosis to cure' myeloma continuum messaging"]},
+      hcpEngagement:{priority:"High",items:["Myeloma thought leaders: DaraVRd induction + Carvykti consolidation discussion","Community hematologists: Tecvayli in-office administration setup support","Urologic oncologists: Xtandi in mCSPC — bridge from urology to oncology","Radiation oncologists + urologists: Pluvicto PSMA patient identification pathway","AML hematologists: Bleximenib NPM1m testing and menin inhibitor education"]},
+      policyAccess:{priority:"High",items:["Carvykti outcomes-based contract: MRD negativity at 12 months as payer endpoint","Darzalex biosimilar defense strategy: contracts + switching barriers","Xtandi Medicaid access: prior authorization reduction using NCCN guideline status","Balversa: companion diagnostic coverage linkage with FDA-approved FGFR test"]}
+    }
+  },
+  "MSD":{
+    focus:["Bladder Cancer","RCC","NSCLC","CRC","Prostate Cancer"],
+    approvedCount:6, pipelineCount:2, diseases:["Bladder Cancer","Renal Cell Carcinoma","Non-Small Cell Lung Cancer","Colorectal Cancer","Prostate Cancer"],
+    oppScore:{commercial:92,medicalAffairs:90,clinicalResearch:87,brandStrategy:92,hcpEngagement:90,policyAccess:85},
+    rwdInsights:[
+      {type:"Claims",title:"Keytruda Cross-Indication Prescribers",body:"Claims show 85% of oncologists prescribing Keytruda for NSCLC also use it in bladder or CRC — portfolio efficiency opportunity."},
+      {type:"EMR",title:"Belzutifan Progression Patterns",body:"EMR identifies RCC patients progressing post-IO/TKI combo — prime Welireg candidates for sequencing guidance."},
+      {type:"Claims",title:"Lynparza Prostate Uptake",body:"Claims show Lynparza in only 28% of HRR-tested mCRPC — significant undiagnosed HRR patient population opportunity."},
+      {type:"EMR",title:"PD-L1 Testing Rates",body:"EMR data shows PD-L1 testing at 72% in NSCLC but only 44% in bladder cancer — testing gap pull-through strategy needed."}
+    ],
+    playbook:{
+      commercial:{priority:"High",items:["Keytruda portfolio optimization: cross-indication pull-through with single sales force","Belzutifan combo trial launch readiness for 1L ccRCC if Phase 3 positive","Lynparza HRR testing expansion — claims-based identification of untested patients","Keytruda in CRC: MSI-H segment — claims identify 15% of mCRC not yet tested","Padcev+Keytruda 1L mUC: establish as gold standard using EV-302 real-world data"]},
+      medicalAffairs:{priority:"High",items:["Publish Keytruda 5-year OS data across bladder, NSCLC, CRC indications","MSL: Belzutifan mechanism education (HIF-2α) for nephrologists and urologic oncologists","HEOR: cost-effectiveness of Keytruda MSI-H in CRC vs. chemotherapy from claims","Scientific platform: dual IO + ADC combinations (Keytruda + Padcev) in urothelial","Lynparza: BRCA/HRR testing rate improvement program via oncologist education"]},
+      clinicalResearch:{priority:"High",items:["KEYNOTE trial enrollment: EMR identification of PD-L1+ patients across tumor types","Belzutifan combo study sites: high-volume RCC centers from EMR volume data","HRR testing registry: claims-based real-world biomarker testing gap study","MSI-H pan-tumor registry: EMR patients with deficient mismatch repair across cancers","Lynparza prostate: real-world HRR mutation prevalence in mCRPC via EMR"]},
+      brandStrategy:{priority:"High",items:["Keytruda: 'your lifelong oncology partner' — multi-indication portfolio brand","Welireg: 'precision HIF-2α inhibition' — differentiate from IO/TKI combos","Lynparza: 'BRCA beyond breast' — HRR narrative expansion to prostate and ovarian","MSD oncology: 'biomarker-first strategy' unifying all portfolio decisions"]},
+      hcpEngagement:{priority:"High",items:["Oncologists: Keytruda portfolio breadth — maximize touchpoints across tumor types","Urologic oncologists: Padcev + Keytruda combination setup in community urology practices","Nephrologists/urologists: Welireg in VHL disease and post-IO RCC","GI oncologists: Keytruda MSI-H testing and 1L CRC use","Medical geneticists: BRCA/HRR testing for Lynparza patient identification"]},
+      policyAccess:{priority:"High",items:["Keytruda tumor-agnostic coverage: MSI-H/TMB-H site-of-service flexibility","Welireg outcomes contract: PFS-based pricing for post-IO RCC","Padcev biosimilar defense: long-term outcomes data from claims","Medicaid access for Keytruda in underserved tumor types: CRC, bladder"]}
+    }
+  },
+  "Pfizer":{
+    focus:["Prostate Cancer","Multiple Myeloma","NSCLC","Bladder Cancer"],
+    approvedCount:4, pipelineCount:3, diseases:["Prostate Cancer","Multiple Myeloma","Non-Small Cell Lung Cancer","Bladder Cancer"],
+    oppScore:{commercial:82,medicalAffairs:80,clinicalResearch:78,brandStrategy:75,hcpEngagement:83,policyAccess:73},
+    rwdInsights:[
+      {type:"Claims",title:"Xtandi Market Retention",body:"Claims show Xtandi retaining 58% of nmCRPC market vs. darolutamide — reinforce tolerability and CNS safety profile in HCP messaging."},
+      {type:"EMR",title:"Elrexfio Real-World Dosing",body:"EMR shows 82% of Elrexfio patients require step-up dosing CRS management — MSL support needed at sites."},
+      {type:"Claims",title:"Padcev Community Expansion",body:"Claims reveal 70% of Padcev usage in academic centers — community infusion center expansion is key growth lever."},
+      {type:"EMR",title:"Xtandi mCSPC Penetration",body:"EMR shows Xtandi in only 45% of eligible mCSPC patients — significant untapped segment vs. abiraterone."}
+    ],
+    playbook:{
+      commercial:{priority:"High",items:["Xtandi mCSPC growth: claims-based identification of hormone-sensitive patients not on ARPI","Elrexfio launch velocity: bispecific in 4L+ RRMM — differentiate from J&J Tecvayli","Padcev community expansion: claims show 70% academic site concentration — shift to community","AMG 509 (BiTE) partnership watch: monitor for combinability with Elrexfio in MM","Pfizer oncology: 'from hormone-sensitive to CRPC' prostate journey messaging"]},
+      medicalAffairs:{priority:"Medium",items:["MSL education: Elrexfio CRS management protocol — reduce discontinuation rates","Xtandi RWE: EMR-based cardiovascular safety vs. abiraterone real-world comparison","Elrexfio depth of response: MRD negativity rates vs. other bispecifics","Scientific exchange: PSMA-targeted combination with Xtandi in mCRPC pipeline","Padcev: publish EMR-based adherence and dose modification patterns in mUC"]},
+      clinicalResearch:{priority:"Medium",items:["Elrexfio Phase 3 earlier-line expansion: EMR eligibility mapping for 2L+ MM","Xtandi combination trials: ARPI + PARP in HRR-untested patients (biomarker enrichment)","Claims-based site selection for MAGNIFY trial (Padcev + Keytruda in new settings)","RWD registry: Elrexfio real-world response rates vs. KarMMa/CARTITUDE","Xtandi adjuvant trials: EMR-based localized PCa patient identification"]},
+      brandStrategy:{priority:"Medium",items:["Xtandi: 'proven, tolerable, guideline-preferred' vs. newer ARPIs","Elrexfio: 'bispecific for the everyday oncologist' — community-friendly dosing","Padcev co-promotion with Astellas: unified brand voice vs. competing ADCs","Pfizer oncology: ADC + bispecific expertise as competitive differentiation"]},
+      hcpEngagement:{priority:"High",items:["Urologic oncologists: Xtandi mCSPC — bridge from urology to oncology continuum","Community hematologists: Elrexfio CRS management training and certification","Community infusion centers: Padcev administration setup and support","Oncology nurses: bispecific safety monitoring protocols for Elrexfio"]},
+      policyAccess:{priority:"Medium",items:["Elrexfio outcomes-based contract: response rate milestones at cycle 3 and 6","Xtandi long-acting formulation: reduce pill burden for adherence support","Padcev payer education: clinical utility vs. standalone pembrolizumab in 1L mUC","Rare disease access: Elrexfio for RRMM in state Medicaid plans"]}
+    }
+  },
+  "Novartis":{
+    focus:["Prostate Cancer","Myelofibrosis"],
+    approvedCount:2, pipelineCount:1, diseases:["Prostate Cancer","Myelofibrosis"],
+    oppScore:{commercial:78,medicalAffairs:85,clinicalResearch:80,brandStrategy:72,hcpEngagement:82,policyAccess:75},
+    rwdInsights:[
+      {type:"EMR",title:"Pluvicto Patient Journey",body:"EMR shows average time from mCRPC diagnosis to PSMA-PET imaging is 14 months — earlier identification can expand Pluvicto eligible pool."},
+      {type:"Claims",title:"PSMA Imaging Utilization",body:"Claims show PSMA PET-CT ordered in only 52% of mCRPC patients progressing post-ARPI — significant pull-through opportunity."},
+      {type:"EMR",title:"Ruxolitinib Market Defense",body:"EMR shows ruxolitinib (Jakafi) faces competition from momelotinib in anemic MF — Novartis acquisitions need MF differentiation."},
+      {type:"Claims",title:"Lutetium Access Barriers",body:"Claims show 34% of Pluvicto prescriptions face prior authorization delays — access program critical for launch velocity."}
+    ],
+    playbook:{
+      commercial:{priority:"High",items:["Pluvicto PSMA-VISION real-world expansion: drive PSMA PET imaging uptake as gateway","Earlier-line Pluvicto trial readiness (PSMAfore data): pre-commercial market shaping","Claims-based identification of post-ARPI + post-taxane mCRPC patients for Pluvicto","Radioligand therapy center network expansion — site credentialing and supply chain","Lutetium production capacity: address prior auth delays with managed access program"]},
+      medicalAffairs:{priority:"High",items:["Interdisciplinary tumor board education: nuclear medicine + medical oncology collaboration","MSL: PSMA expression heterogeneity and patient selection best practices","HEOR: Pluvicto OS benefit translated to payer value — cost per life-year gained","Publish EMR-based real-world PSMA PET imaging rates and patient outcomes","Scientific exchange: alpha-emitter lutetium next-generation pipeline (TAT)"]},
+      clinicalResearch:{priority:"High",items:["PSMAfore trial (pre-docetaxel) enrollment: EMR eligibility mapping for 1L+ mCRPC","Claims to identify PSMA PET-negative patients — define unmet need for non-PSMA RLT","Site expansion: Pluvicto authorized treatment centers — EMR site volume analysis","RWD registry: Pluvicto real-world outcomes across PSMA expression levels","Combination studies: Pluvicto + PARP inhibitor — HRR enrichment via EMR"]},
+      brandStrategy:{priority:"Medium",items:["Pluvicto: 'precision radiation that follows the cancer' — PSMA-guided radioligand therapy","Novartis oncology: radioligand therapy as distinct modality vs. chemotherapy/IO","Patient journey brand: 'see it, target it, treat it' — PSMA imaging to therapy continuum"]},
+      hcpEngagement:{priority:"High",items:["Nuclear medicine specialists: PSMA PET-CT interpretation and Pluvicto referral pathway","Urologic oncologists: mCRPC patient identification and PSMA imaging ordering","Medical oncologists: Pluvicto sequencing after ARPI + docetaxel","Oncology pharmacists: radioligand therapy safety and handling protocols","Radiation oncologists: radioligand vs. external beam — combination opportunity education"]},
+      policyAccess:{priority:"High",items:["Prior authorization reduction: PSMA PET + Pluvicto bundled coverage advocacy","Radioligand therapy site-of-care: hospital vs. outpatient reimbursement parity","Outcomes contract: OS milestone-based rebate structure with major payers","Medicare Part B vs. Part D classification for Pluvicto — optimize reimbursement pathway"]}
+    }
+  },
+  "AbbVie":{
+    focus:["CLL","AML","Myelofibrosis"],
+    approvedCount:3, pipelineCount:2, diseases:["Chronic Lymphocytic Leukemia","Acute Myeloid Leukemia","Myelofibrosis"],
+    oppScore:{commercial:85,medicalAffairs:82,clinicalResearch:88,brandStrategy:78,hcpEngagement:85,policyAccess:82},
+    rwdInsights:[
+      {type:"Claims",title:"Imbruvica to Calquence Switching",body:"Claims show 22% annual attrition from ibrutinib due to AF/cardiovascular events — zanubrutinib capturing 40% of switches."},
+      {type:"EMR",title:"Venetoclax Adherence Patterns",body:"EMR shows 15% dose reductions in venetoclax due to cytopenias — opportunity to educate on management and maintain time-limited therapy."},
+      {type:"Claims",title:"MF Combination Readiness",body:"Claims identify ruxolitinib-failing MF patients — navitoclax combo trial eligibility population estimated at 3,200 patients."},
+      {type:"EMR",title:"CLL Line of Therapy Mapping",body:"EMR shows 35% of CLL patients reaching 3L without pirtobrutinib or venetoclax — untapped BTK-post market for epcoritamab."}
+    ],
+    playbook:{
+      commercial:{priority:"High",items:["Imbruvica defense: retain patients via cardiovascular risk stratification support tools","Venetoclax + obinutuzumab: push time-limited therapy narrative vs. indefinite BTKi","Navitoclax combination (MF) launch readiness: define ruxolitinib-failed patient segment","Epcoritamab CLL: bispecific in BTKi + venetoclax dual-exposed segment","Claims analysis: identify ibrutinib patients with cardiovascular events for switch messaging"]},
+      medicalAffairs:{priority:"High",items:["MSL: ibrutinib AF management — risk stratification and continuation strategies","Venetoclax real-world MRD: EMR-based time-to-undetectable MRD analysis","Scientific exchange: navitoclax + ruxolitinib combination mechanism and tolerability","Epcoritamab CLL: B-cell aplasia management education for hematologists","HEOR: venetoclax time-limited therapy vs. BTKi indefinite — cost model for payers"]},
+      clinicalResearch:{priority:"High",items:["Navitoclax Phase 3 site identification: EMR mapping of ruxolitinib-refractory MF sites","CLL real-world registry: claims-based treatment patterns post-BTKi and venetoclax","Epcoritamab Phase 2 CLL enrollment: EMR identification of dual-exposed patients","RWD: venetoclax MRD negativity rates in CLL by line of therapy","IMbruvica successor study: non-covalent BTK inhibitor data vs. pirtobrutinib"]},
+      brandStrategy:{priority:"Medium",items:["Venetoclax: 'fixed-duration, MRD-guided therapy' — contrast with indefinite BTKi","Imbruvica: 'established backbone with 10-year long-term data' in mantle cell lymphoma","AbbVie hematology: 'from BTK to BCL-2 to bispecific' — CLL continuum ownership","Navitoclax: 'adding BCL-2/XL to your JAK inhibitor' for MF combination era"]},
+      hcpEngagement:{priority:"High",items:["Community hematologists: venetoclax MRD testing protocols and stopping rules","Cardiologists: ibrutinib AF management protocol — retain cardio-oncology co-management","MF specialists: navitoclax + ruxolitinib combination trial enrollment and rationale","Hematologic oncologists: epcoritamab step-up dosing for CLL — outpatient safety","Oncology nurses: venetoclax tumor lysis syndrome prophylaxis education"]},
+      policyAccess:{priority:"High",items:["Venetoclax time-limited therapy: payer preference vs. indefinite BTKi (cost advantage)","Imbruvica biosimilar defense: NCCN preferred status maintenance in MCL","Navitoclax MF: rare disease access pathway and orphan drug pricing","Epcoritamab CLL: step-edit policy removal — claims showing prior BTKi + venetoclax use"]}
+    }
+  }
+};
+
+// STATE
+let activeDisease="All",activeFilter="All",sortCol=null,sortDir=1,sidebarOpen=true,activePage="pipeline";
+
+function toggleSidebar(){
+  sidebarOpen=!sidebarOpen;
+  const sw=document.getElementById("sidebarWrap");
+  const tog=document.getElementById("sidebarToggle");
+  sw.classList.toggle("collapsed",!sidebarOpen);
+  tog.innerHTML=sidebarOpen?"&#9776;":"&#9654;";
+  tog.title=sidebarOpen?"Collapse sidebar":"Expand sidebar";
+}
+
+function switchPage(page,btn){
+  activePage=page;
+  document.querySelectorAll(".nav-tab").forEach(t=>t.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.getElementById("searchBarWrap").style.display=page==="pipeline"?"flex":"none";
+  if(page==="accounts") renderAccount();
+}
+
+// PIPELINE
+function barColor(p){return p>=30?"#34d399":p>=15?"#60a5fa":p>=8?"#fbbf24":"#fb923c";}
+function phaseBadge(p){const m={Approved:"badge-approved","Phase 3":"badge-phase3","Phase 2":"badge-phase2","Phase 1":"badge-phase1","NDA/BLA":"badge-nda",Discontinued:"badge-disc"};return `<span class="badge ${m[p]||'badge-phase1'}">${p}</span>`;}
+function phaseBar(p){const steps=["Phase 1","Phase 2","Phase 3","NDA/BLA","Approved"],idx=steps.indexOf(p),dc=p==="Approved"?"pd-approved":p==="NDA/BLA"?"pd-nda":p==="Phase 3"?"pd-phase3":p==="Phase 2"?"pd-phase2":"pd-phase1";return `<div class="phase-bar">${steps.map((_,i)=>`<div class="phase-dot ${(p!=="Discontinued"&&i<=idx)?dc:""}"></div>`).join("")}</div>`;}
+function phaseBarColor(p){return p==="Approved"?"#34d399":p==="NDA/BLA"?"#a78bfa":p==="Phase 3"?"#60a5fa":p==="Phase 2"?"#fbbf24":"#fb923c";}
+
+function buildSidebar(){
+  let h=`<div class="sidebar-all ${activeDisease==='All'?'active':''}" onclick="setDisease('All','All Disease States','Showing all approved drugs and pipeline candidates')">All Diseases</div>`;
+  for(const [area,info] of Object.entries(areas)){
+    const id=area.replace(/\s/g,"_");
+    h+=`<div><div class="sidebar-area open" id="area_${id}" onclick="toggleArea('${id}')"><span>${area}</span><span class="arr">▶</span></div>
+    <div class="sidebar-diseases open" id="dis_${id}">${info.diseases.map(d=>`<div class="sidebar-disease ${activeDisease===d?'active':''}" onclick="setDisease('${d}','${d}','${area} — ${info.desc}')">${d}</div>`).join("")}</div></div>`;
+  }
+  document.getElementById("sidebar").innerHTML=h;
+}
+function toggleArea(id){document.getElementById("dis_"+id).classList.toggle("open");document.getElementById("area_"+id).classList.toggle("open");}
+function setDisease(d,title,desc){activeDisease=d;document.getElementById("pageTitle").textContent=title;document.getElementById("pageDesc").textContent=desc;buildSidebar();renderAll();}
+function setFilter(f,btn){activeFilter=f;document.querySelectorAll(".filter-btn").forEach(b=>b.classList.remove("active"));btn.classList.add("active");renderAll();}
+function sortBy(col){if(sortCol===col)sortDir*=-1;else{sortCol=col;sortDir=1;}document.querySelectorAll("thead th").forEach(t=>t.classList.remove("sort-asc","sort-desc"));const th=document.getElementById("th-"+col);if(th)th.classList.add(sortDir===1?"sort-asc":"sort-desc");renderAll();}
+function getVal(d,col){if(col==="phase")return phaseOrder[d.phase]??0;if(col==="year")return d.year==="—"?9999:parseInt(d.year);return(d[col]||"").toLowerCase();}
+
+function renderMarket(){
+  const mp=document.getElementById("marketPanel"),cs=document.getElementById("captureSection");
+  if(activeDisease==="All"||!marketData[activeDisease]){mp.classList.remove("visible");cs.classList.remove("visible");return;}
+  const m=marketData[activeDisease];
+  mp.classList.add("visible");
+  document.getElementById("mpTitle").textContent=`${activeDisease} — Market Intelligence`;
+  document.getElementById("mpGrid").innerHTML=`
+    <div class="mp-metric"><div class="mp-metric-label">Market Size (2024)</div><div class="mp-metric-value mp-mktsize">${m.marketSize2024}</div><div class="mp-metric-sub">Global therapeutics</div></div>
+    <div class="mp-metric"><div class="mp-metric-label">Forecast (${m.horizon})</div><div class="mp-metric-value mp-future">${m.marketSize2030}</div><div class="mp-metric-sub">5–10 yr projection</div></div>
+    <div class="mp-metric"><div class="mp-metric-label">CAGR</div><div class="mp-metric-value mp-cagr">${m.cagr}</div><div class="mp-metric-sub">Annual growth rate</div></div>
+    <div class="mp-metric"><div class="mp-metric-label">Patient Volume</div><div class="mp-metric-value mp-patients" style="font-size:12px;margin-top:2px;">${m.patients}</div><div class="mp-metric-sub">New cases / prevalence</div></div>`;
+  document.getElementById("mpNote").textContent=m.note;
+  cs.classList.add("visible");
+  document.getElementById("captureDiseaseLabel").textContent=activeDisease;
+  document.getElementById("captureGrid").innerHTML=m.captures.map(c=>`<div class="capture-card"><div class="capture-drug">${c.drug}</div><div style="font-size:10px;color:#64748b;margin-bottom:3px;">${c.line}</div><div class="capture-bar-wrap"><div class="capture-bar" style="width:${Math.min(c.pct,100)}%;background:${barColor(c.pct)};"></div></div><div class="capture-meta"><span>${c.rev}</span><span style="font-weight:600;color:${barColor(c.pct)};">${c.pct}%</span></div></div>`).join("");
+}
+
+function renderStats(filtered){
+  const c={Approved:0,"NDA/BLA":0,"Phase 3":0,"Phase 2":0,"Phase 1":0,Discontinued:0};
+  filtered.forEach(d=>{if(c[d.phase]!==undefined)c[d.phase]++;});
+  document.getElementById("statsRow").innerHTML=`
+    <div class="stat-card stat-approved"><div class="stat-num">${c.Approved}</div><div class="stat-label">Approved</div></div>
+    <div class="stat-card stat-p3"><div class="stat-num">${c["Phase 3"]+c["NDA/BLA"]}</div><div class="stat-label">Phase 3 / NDA</div></div>
+    <div class="stat-card stat-p2"><div class="stat-num">${c["Phase 2"]}</div><div class="stat-label">Phase 2</div></div>
+    <div class="stat-card stat-p1"><div class="stat-num">${c["Phase 1"]}</div><div class="stat-label">Phase 1</div></div>
+    <div class="stat-card stat-disc"><div class="stat-num">${c.Discontinued}</div><div class="stat-label">Discontinued</div></div>`;
+}
+
+function renderAll(){
+  const q=document.getElementById("searchInput").value.toLowerCase();
+  let filtered=drugs.filter(d=>{
+    const mD=activeDisease==="All"||d.disease===activeDisease;
+    const mF=activeFilter==="All"||d.phase===activeFilter;
+    const mQ=!q||[d.name,d.brand,d.company,d.moa,d.target,d.disease].some(v=>v.toLowerCase().includes(q));
+    return mD&&mF&&mQ;
+  });
+  if(sortCol)filtered.sort((a,b)=>{const av=getVal(a,sortCol),bv=getVal(b,sortCol);return av<bv?-sortDir:av>bv?sortDir:0;});
+  renderStats(filtered);
+  renderMarket();
+  const tbody=document.getElementById("drugTable"),noRes=document.getElementById("noResults");
+  if(!filtered.length){tbody.innerHTML="";noRes.style.display="block";return;}
+  noRes.style.display="none";
+  tbody.innerHTML=filtered.map(d=>`<tr>
+    <td><div class="drug-name">${d.name}</div><div class="drug-generic">${d.brand}</div></td>
+    <td style="font-size:11px;color:#94a3b8;">${d.disease}</td>
+    <td style="font-size:11px;color:#94a3b8;">${d.company}</td>
+    <td><span class="moa-tag">${d.moa}</span></td>
+    <td style="font-size:11px;color:#94a3b8;">${d.target}</td>
+    <td>${phaseBadge(d.phase)}</td>
+    <td>${phaseBar(d.phase)}</td>
+    <td style="font-size:11px;color:#64748b;">${d.year}</td>
+  </tr>`).join("");
+}
+
+// ACCOUNT PAGE
+function initAccountSelect(){
+  const sel=document.getElementById("acctSelect");
+  Object.keys(accountPlaybooks).forEach(co=>{
+    const o=document.createElement("option");o.value=co;o.textContent=co;sel.appendChild(o);
+  });
+}
+
+function priorityTag(p){const cls=p==="High"?"tag-high":p==="Medium"?"tag-med":"tag-low";return `<span class="pb-tag ${cls}">${p}</span>`;}
+
+function renderAccount(){
+  const co=document.getElementById("acctSelect").value;
+  const pb=accountPlaybooks[co];
+  if(!pb){document.getElementById("accountContent").innerHTML="";return;}
+  const acctDrugs=drugs.filter(d=>d.company.includes(co)||(co==="AbbVie"&&d.company.includes("AbbVie"))||(co==="MSD"&&d.company.includes("MSD")));
+  const approved=acctDrugs.filter(d=>d.phase==="Approved");
+  const pipeline=acctDrugs.filter(d=>d.phase!=="Approved"&&d.phase!=="Discontinued");
+
+  const scores=pb.oppScore;
+  const scoreEntries=Object.entries(scores);
+
+  const functionalIcons={commercial:"📊",medicalAffairs:"🔬",clinicalResearch:"🧪",brandStrategy:"🎯",hcpEngagement:"👨‍⚕️",policyAccess:"📋"};
+  const functionalLabels={commercial:"Commercial Strategy",medicalAffairs:"Medical Affairs",clinicalResearch:"Clinical Research",brandStrategy:"Brand Strategy",hcpEngagement:"HCP Engagement",policyAccess:"Policy & Access"};
+
+  document.getElementById("accountContent").innerHTML=`
+    <!-- Summary -->
+    <div class="acct-summary-row">
+      <div class="acct-stat"><div class="acct-stat-label">Approved Products</div><div class="acct-stat-value">${approved.length}</div><div class="acct-stat-sub">Active commercial assets</div></div>
+      <div class="acct-stat"><div class="acct-stat-label">Pipeline Assets</div><div class="acct-stat-value">${pipeline.length}</div><div class="acct-stat-sub">Phase 1 through NDA</div></div>
+      <div class="acct-stat"><div class="acct-stat-label">Disease Areas</div><div class="acct-stat-value">${pb.focus.length}</div><div class="acct-stat-sub">${pb.focus.join(", ")}</div></div>
+      <div class="acct-stat"><div class="acct-stat-label">Engagement Score</div><div class="acct-stat-value" style="color:#fbbf24;">${Math.round(Object.values(scores).reduce((a,b)=>a+b,0)/scoreEntries.length)}</div><div class="acct-stat-sub">Overall BD priority</div></div>
+    </div>
+
+    <!-- Pipeline -->
+    <div class="section-title">Product Portfolio</div>
+    <div class="acct-drugs-grid">${acctDrugs.slice(0,12).map(d=>{
+      const pct={"Approved":100,"NDA/BLA":85,"Phase 3":65,"Phase 2":40,"Phase 1":20,"Discontinued":5}[d.phase]||0;
+      return `<div class="acct-drug-card">
+        <div class="acct-drug-top"><div><div class="acct-drug-name">${d.name}</div><div class="acct-drug-brand">${d.brand}</div></div>${phaseBadge(d.phase)}</div>
+        <div class="acct-drug-disease">${d.disease}</div>
+        <div class="acct-drug-moa">${d.moa}</div>
+        <div class="acct-prog"><div class="acct-prog-bar" style="width:${pct}%;background:${phaseBarColor(d.phase)};"></div></div>
+        <div style="font-size:10px;color:#64748b;">${d.target} · ${d.year}</div>
+      </div>`;}).join("")}
+    </div>
+
+    <!-- Opportunity scores -->
+    <div class="section-title">BD Opportunity Scoring</div>
+    <div class="opp-score-wrap">
+      <div class="opp-score-title">Functional Area Engagement Priority — ${co}</div>
+      ${scoreEntries.map(([k,v])=>`<div class="opp-row">
+        <div class="opp-label">${functionalLabels[k]||k}</div>
+        <div class="opp-bar-wrap"><div class="opp-bar" style="width:${v}%;background:${v>=85?"#34d399":v>=75?"#60a5fa":"#fbbf24"};"></div></div>
+        <div class="opp-score" style="color:${v>=85?"#34d399":v>=75?"#60a5fa":"#fbbf24"};">${v}</div>
+      </div>`).join("")}
+    </div>
+
+    <!-- RWD Insights -->
+    <div class="section-title">Real World Data Insights (EMR + Claims)</div>
+    <div class="rwd-panel">
+      <div style="font-size:10px;color:#64748b;margin-bottom:8px;">Insights derived from oncology EMR and commercial claims data to inform account strategy and opportunity prioritization.</div>
+      <div class="rwd-grid">${pb.rwdInsights.map(r=>`<div class="rwd-card">
+        <span class="rwd-badge ${r.type==='EMR'?'rwd-emr':'rwd-claims'}">${r.type}</span>
+        <div class="rwd-card-title">${r.title}</div>
+        <div class="rwd-card-body">${r.body}</div>
+      </div>`).join("")}
+      </div>
+    </div>
+
+    <!-- Playbook -->
+    <div class="section-title">Strategic Playbook — ${co}</div>
+    <div class="playbook-grid">${Object.entries(pb.playbook).map(([fn,data])=>`
+      <div class="pb-card">
+        <div class="pb-card-header">
+          <div class="pb-icon" style="background:#132133;font-size:15px;">${functionalIcons[fn]||"📌"}</div>
+          <div><div class="pb-card-title">${functionalLabels[fn]||fn}</div><div class="pb-card-sub">Priority: ${priorityTag(data.priority)}</div></div>
+        </div>
+        <ul class="pb-items">${data.items.map(item=>`<li>${item}</li>`).join("")}</ul>
+      </div>`).join("")}
+    </div>`;
+}
+
+// INIT
+buildSidebar();
+renderAll();
+initAccountSelect();
+renderAccount();
+</script>
+</body>
+</html>
