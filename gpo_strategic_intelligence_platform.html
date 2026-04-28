@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GPO Strategic Intelligence Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'IBM Plex Sans',sans-serif;background:#070e1c;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden;}
+:root{--bg-deep:#070e1c;--bg-card:#0c1a30;--bg-hover:#112240;--border:#1a3352;--border-lt:#243f60;--text-1:#e2e8f0;--text-2:#94a3b8;--text-3:#64748b;--text-4:#3d556e;--blue:#60a5fa;--green:#34d399;--yellow:#fbbf24;--orange:#fb923c;--red:#f87171;--purple:#a78bfa;--teal:#2dd4bf;--mono:'IBM Plex Mono',monospace;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:var(--bg-deep);}
+::-webkit-scrollbar-thumb{background:#1a3352;border-radius:3px;}
+::-webkit-scrollbar-thumb:hover{background:#243f60;}
+
+/* HEADER */
+.header{background:var(--bg-card);border-bottom:1px solid var(--border);padding:0.55rem 1.25rem;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.hbrand{display:flex;align-items:center;gap:10px;}
+.hlogo{width:30px;height:30px;background:linear-gradient(135deg,#1d4ed8 0%,#0891b2 100%);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;}
+.htitle{font-size:0.92rem;font-weight:600;color:var(--text-1);letter-spacing:-0.3px;}
+.hsub{font-size:0.67rem;color:var(--text-3);margin-top:1px;}
+.hright{display:flex;align-items:center;gap:12px;}
+.hbadge{background:#0f2236;border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:11px;color:var(--green);font-family:var(--mono);}
+.hsearch{display:flex;align-items:center;gap:6px;background:#112240;border:1px solid var(--border-lt);border-radius:7px;padding:4px 10px;width:205px;}
+.hsearch input{background:none;border:none;outline:none;color:var(--text-1);font-size:12px;width:100%;font-family:'IBM Plex Sans',sans-serif;}
+.hsearch input::placeholder{color:var(--text-4);}
+
+/* NAV */
+.nav{display:flex;gap:1px;background:var(--bg-deep);border-bottom:1px solid var(--border);padding:0 1.25rem;flex-shrink:0;}
+.ntab{padding:8px 15px;font-size:11.5px;font-weight:500;cursor:pointer;color:var(--text-3);border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;display:flex;align-items:center;gap:5px;}
+.ntab:hover{color:var(--text-2);}
+.ntab.active{color:var(--blue);border-bottom-color:var(--blue);}
+
+/* LAYOUT */
+.layout{display:flex;flex:1;overflow:hidden;}
+
+/* SIDEBAR */
+.sb{display:flex;flex-direction:column;background:var(--bg-card);border-right:1px solid var(--border);flex-shrink:0;transition:width .25s;width:185px;overflow:hidden;}
+.sb.collapsed{width:34px;}
+.sb-tog{flex-shrink:0;display:flex;align-items:center;justify-content:center;padding:8px;cursor:pointer;border-bottom:1px solid var(--border);color:var(--text-4);font-size:13px;transition:color .15s;}
+.sb-tog:hover{color:var(--blue);}
+.sb-inner{overflow-y:auto;flex:1;padding:5px 0;white-space:nowrap;}
+.sb-section{padding:9px 11px 3px;font-size:9.5px;font-weight:600;text-transform:uppercase;letter-spacing:.9px;color:var(--text-4);}
+.sb-item{padding:5px 11px;font-size:12px;color:var(--text-2);cursor:pointer;border-left:2px solid transparent;transition:all .15s;display:flex;align-items:center;gap:6px;}
+.sb-item:hover{color:var(--text-1);background:var(--bg-hover);}
+.sb-item.active{color:var(--blue);border-left-color:var(--blue);background:#112240;}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:var(--border-lt);flex-shrink:0;}
+.sb-item.active .sb-dot{background:var(--blue);}
+.sb-div{margin:5px 11px;height:1px;background:var(--border);}
+.sb-sub{padding:4px 11px 4px 20px;font-size:11px;color:var(--text-3);cursor:pointer;transition:all .15s;border-left:2px solid transparent;}
+.sb-sub:hover{color:var(--text-2);background:var(--bg-hover);}
+.sb-sub.active{color:var(--blue);border-left-color:var(--blue);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+.page{display:none;flex:1;flex-direction:column;overflow:hidden;padding:.85rem 1.25rem 0;}
+.page.active{display:flex;}
+.pscroll{flex:1;overflow-y:auto;padding-bottom:1rem;}
+
+/* PAGE HEADER */
+.ph{margin-bottom:.65rem;flex-shrink:0;}
+.ph-title{font-size:.88rem;font-weight:600;color:var(--text-1);margin-bottom:1px;}
+.ph-desc{font-size:11px;color:var(--text-3);}
+
+/* KPI ROW */
+.kpi-row{display:grid;gap:7px;margin-bottom:.65rem;flex-shrink:0;}
+.kpi5{grid-template-columns:repeat(5,1fr);}
+.kpi4{grid-template-columns:repeat(4,1fr);}
+.kpi3{grid-template-columns:repeat(3,1fr);}
+.kcard{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:9px 12px;position:relative;overflow:hidden;}
+.kcard::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:8px 8px 0 0;}
+.kb::before{background:linear-gradient(90deg,var(--blue),transparent);}
+.kg::before{background:linear-gradient(90deg,var(--green),transparent);}
+.ky::before{background:linear-gradient(90deg,var(--yellow),transparent);}
+.ko::before{background:linear-gradient(90deg,var(--orange),transparent);}
+.kp::before{background:linear-gradient(90deg,var(--purple),transparent);}
+.kt::before{background:linear-gradient(90deg,var(--teal),transparent);}
+.kc-label{font-size:10px;color:var(--text-3);margin-bottom:3px;text-transform:uppercase;letter-spacing:.5px;}
+.kc-val{font-size:1.25rem;font-weight:700;font-family:var(--mono);line-height:1;}
+.kc-sub{font-size:10px;color:var(--text-2);margin-top:3px;}
+.kc-delta{display:inline-flex;align-items:center;gap:2px;font-size:10px;font-weight:600;padding:1px 5px;border-radius:4px;margin-top:2px;}
+.d-up{background:#053a25;color:var(--green);}
+.d-dn{background:#3a0d0d;color:var(--red);}
+
+/* SECTION TITLE */
+.stitle{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.8px;color:var(--text-4);margin-bottom:7px;display:flex;align-items:center;gap:8px;}
+.stitle::after{content:'';flex:1;height:1px;background:var(--border);}
+.stitle .sc{background:var(--bg-hover);border:1px solid var(--border-lt);border-radius:10px;padding:1px 7px;font-size:10px;color:var(--text-2);font-weight:500;}
+
+/* TABLE */
+.tbl-wrap{border:1px solid var(--border);border-radius:9px;overflow:hidden;}
+.tbl-scroll{overflow-y:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:6px 10px;text-align:left;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--text-4);background:#080f1e;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--text-2);}
+thead th.sa::after{content:" ▲";font-size:8px;color:var(--blue);}
+thead th.sd::after{content:" ▼";font-size:8px;color:var(--blue);}
+tbody tr{border-bottom:1px solid #0f1e30;transition:background .1s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:#0f2236;}
+tbody td{padding:7px 10px;font-size:12px;color:var(--text-2);vertical-align:middle;}
+.td1{font-weight:600;color:var(--text-1);font-size:12px;}
+.tdsub{font-size:10px;color:var(--text-3);margin-top:1px;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600;white-space:nowrap;}
+.b-plat{background:#1a2d45;color:var(--text-1);}
+.b-gold{background:#332600;color:var(--yellow);}
+.b-silver{background:#1a2535;color:var(--text-2);}
+.b-bronze{background:#2d1800;color:var(--orange);}
+.b-active{background:#053a25;color:var(--green);}
+.b-atrisk{background:#3a0d0d;color:var(--red);}
+.b-prospect{background:#1c1545;color:var(--purple);}
+.b-contracted{background:#053a25;color:var(--green);}
+.b-neg{background:#1a3352;color:var(--blue);}
+.b-target{background:#332600;color:var(--yellow);}
+.b-watch{background:#1a2535;color:var(--text-2);}
+.b-approved{background:#053a25;color:var(--green);}
+.b-phase3{background:#1a3352;color:var(--blue);}
+.b-phase2{background:#332600;color:var(--yellow);}
+.b-phase1{background:#2d1800;color:var(--orange);}
+.b-nda{background:#1c1545;color:var(--purple);}
+.b-disc{background:#3a0d0d;color:var(--red);}
+
+/* FILTER BAR */
+.fbar{display:flex;gap:5px;margin-bottom:.6rem;flex-wrap:wrap;align-items:center;flex-shrink:0;}
+.fbtn{padding:3px 9px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--border-lt);background:transparent;color:var(--text-2);transition:all .15s;font-family:'IBM Plex Sans',sans-serif;}
+.fbtn:hover{border-color:var(--blue);color:var(--blue);}
+.fbtn.active{background:#1a3352;border-color:var(--blue);color:var(--blue);font-weight:500;}
+.flabel{font-size:11px;color:var(--text-3);}
+
+/* COMP BAR */
+.cbar-wrap{height:5px;background:#112240;border-radius:3px;overflow:hidden;width:80px;}
+.cbar{height:100%;border-radius:3px;}
+
+/* TREND */
+.trend{font-size:11px;font-weight:600;}
+.t-up{color:var(--green);}
+.t-dn{color:var(--red);}
+.t-flat{color:var(--text-3);}
+
+/* OVERVIEW GRID */
+.ov-grid{display:grid;grid-template-columns:1.1fr 0.9fr;gap:10px;margin-bottom:.65rem;}
+.ov-full{grid-column:1/-1;}
+
+/* OPPORTUNITY MATRIX */
+.opp-matrix{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
+.om-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-4);margin-bottom:8px;}
+.om-labels{display:flex;justify-content:space-between;font-size:9px;color:var(--text-4);margin-bottom:4px;}
+.om-body{display:flex;gap:6px;}
+.om-yaxis{display:flex;flex-direction:column;justify-content:space-between;align-items:center;padding:0 5px 0 0;font-size:9px;color:var(--text-4);}
+.om-yaxis span:first-child{transform:rotate(-90deg) translateX(15px);white-space:nowrap;}
+.om-yaxis span:last-child{transform:rotate(-90deg) translateX(-15px);white-space:nowrap;}
+.om-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;gap:5px;flex:1;height:155px;}
+.mq{border-radius:7px;padding:8px 10px;display:flex;flex-direction:column;justify-content:space-between;}
+.mq-label{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:3px;}
+.mq-items{font-size:10px;line-height:1.65;}
+.mq-invest{background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.22);}
+.mq-invest .mq-label{color:var(--green);}
+.mq-invest .mq-items{color:#86efac;}
+.mq-defend{background:rgba(96,165,250,.09);border:1px solid rgba(96,165,250,.2);}
+.mq-defend .mq-label{color:var(--blue);}
+.mq-defend .mq-items{color:#93c5fd;}
+.mq-enter{background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.2);}
+.mq-enter .mq-label{color:var(--yellow);}
+.mq-enter .mq-items{color:#fde68a;}
+.mq-harvest{background:rgba(100,116,139,.09);border:1px solid rgba(100,116,139,.2);}
+.mq-harvest .mq-label{color:var(--text-3);}
+.mq-harvest .mq-items{color:var(--text-3);}
+.om-xaxis{display:flex;justify-content:space-between;font-size:9px;color:var(--text-4);margin-top:3px;}
+
+/* ALERT PANEL */
+.alert-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
+.ap-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-4);margin-bottom:8px;}
+.al-item{display:flex;align-items:center;gap:9px;padding:5px 0;border-bottom:1px solid #0f1e30;}
+.al-item:last-child{border-bottom:none;}
+.al-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+.al-dot-a{background:var(--green);box-shadow:0 0 6px rgba(52,211,153,.5);}
+.al-dot-b{background:var(--yellow);box-shadow:0 0 5px rgba(251,191,36,.4);}
+.al-dot-c{background:var(--blue);}
+.al-drug{font-size:12px;font-weight:600;color:var(--text-1);}
+.al-meta{font-size:10px;color:var(--text-3);}
+.al-tag{font-size:10px;font-family:var(--mono);white-space:nowrap;}
+.al-tag-a{color:var(--green);font-weight:600;}
+.al-tag-b{color:var(--yellow);font-weight:600;}
+.al-tag-c{color:var(--blue);}
+
+/* INTEL FEED */
+.intel-panel{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
+.ip-title{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-4);margin-bottom:8px;}
+.ip-item{display:flex;gap:9px;padding:6px 0;border-bottom:1px solid #0f1e30;}
+.ip-item:last-child{border-bottom:none;}
+.ip-icon{width:22px;height:22px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;}
+.ip-body{flex:1;}
+.ip-text{font-size:11.5px;color:var(--text-2);line-height:1.4;}
+.ip-date{font-size:10px;color:var(--text-4);margin-top:2px;}
+.ip-tag{display:inline-block;padding:1px 6px;border-radius:4px;font-size:9.5px;font-weight:600;margin-left:5px;}
+.ipt-fda{background:rgba(52,211,153,.12);color:var(--green);}
+.ipt-biosim{background:rgba(96,165,250,.12);color:var(--blue);}
+.ipt-member{background:rgba(167,139,250,.12);color:var(--purple);}
+.ipt-market{background:rgba(251,191,36,.12);color:var(--yellow);}
+.ipt-contract{background:rgba(45,212,191,.12);color:var(--teal);}
+
+/* MEMBER MINI SUMMARY */
+.mem-mini{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;}
+.mm-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-top:8px;}
+.mm-card{background:#0a1628;border-radius:6px;padding:7px 9px;}
+.mm-label{font-size:10px;color:var(--text-3);margin-bottom:2px;}
+.mm-val{font-size:1.05rem;font-weight:700;font-family:var(--mono);}
+
+/* MARKET OPPORTUNITY PAGE */
+.ta-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(256px,1fr));gap:8px;}
+.ta-card{background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:11px 13px;transition:border-color .15s;}
+.ta-card:hover{border-color:var(--border-lt);}
+.ta-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;}
+.ta-name{font-size:13px;font-weight:600;color:var(--text-1);}
+.ta-mkt{font-size:10px;color:var(--text-3);margin-top:1px;}
+.ta-rec{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;}
+.ta-expand{background:rgba(52,211,153,.13);color:var(--green);border:1px solid rgba(52,211,153,.28);}
+.ta-defend{background:rgba(96,165,250,.11);color:var(--blue);border:1px solid rgba(96,165,250,.24);}
+.ta-enter{background:rgba(251,191,36,.11);color:var(--yellow);border:1px solid rgba(251,191,36,.24);}
+.ta-maintain{background:rgba(100,116,139,.11);color:var(--text-2);border:1px solid rgba(100,116,139,.24);}
+.ta-metrics{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-bottom:8px;}
+.ta-metric{background:#080f1e;border-radius:5px;padding:5px 7px;}
+.ta-ml{font-size:9px;color:var(--text-4);margin-bottom:2px;text-transform:uppercase;letter-spacing:.3px;}
+.ta-mv{font-size:12px;font-weight:700;font-family:var(--mono);}
+.ta-score-row{display:flex;align-items:center;gap:7px;margin-bottom:4px;}
+.ta-score-label{font-size:10px;color:var(--text-3);flex-shrink:0;width:90px;}
+.ta-sbar-wrap{flex:1;height:5px;background:#0f2236;border-radius:3px;overflow:hidden;}
+.ta-sbar{height:100%;border-radius:3px;}
+.ta-sval{font-size:10px;font-weight:600;font-family:var(--mono);width:28px;text-align:right;}
+.ta-contract-row{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #0f1e30;padding-top:7px;margin-top:5px;}
+.ta-cl{font-size:10px;color:var(--text-3);}
+.ta-cv{font-size:11px;font-weight:600;font-family:var(--mono);}
+
+/* CONTRACT PAGE */
+.biosim-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(235px,1fr));gap:7px;}
+.biosim-card{background:var(--bg-card);border:1px solid var(--border);border-radius:8px;padding:10px 12px;}
+.bs-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px;}
+.bs-drug{font-size:12px;font-weight:600;color:var(--text-1);}
+.bs-cat{font-size:10px;color:var(--text-3);}
+.bs-save{font-size:10px;font-weight:700;color:var(--green);background:rgba(52,211,153,.1);border:1px solid rgba(52,211,153,.2);border-radius:4px;padding:1px 6px;}
+.bs-row{display:flex;align-items:center;gap:6px;margin:5px 0;}
+.bs-rl{font-size:10px;color:var(--text-3);width:58px;flex-shrink:0;}
+.bs-bg{flex:1;height:5px;background:#0f2236;border-radius:3px;overflow:hidden;}
+.bs-fill{height:100%;border-radius:3px;}
+.bs-pct{font-size:10px;font-family:var(--mono);width:32px;text-align:right;}
+.bs-upside{font-size:10px;color:var(--green);margin-top:4px;font-style:italic;}
+
+/* MANUFACTURER TABLE */
+.mfr-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+
+/* RENEWAL ITEMS */
+.ren-item{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #0f1e30;}
+.ren-item:last-child{border-bottom:none;}
+.ren-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.ren-urgent{background:var(--red);}
+.ren-soon{background:var(--yellow);}
+.ren-ok{background:var(--green);}
+.ren-body{flex:1;}
+.ren-name{font-size:12px;font-weight:600;color:var(--text-1);}
+.ren-meta{font-size:10px;color:var(--text-3);}
+.ren-date{font-size:11px;font-family:var(--mono);font-weight:500;}
+
+/* PIPELINE - CONTRACT STATUS INDICATORS */
+.cs-row{display:flex;align-items:center;gap:4px;font-size:11px;}
+.cs-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.csd-contracted{background:var(--green);}
+.csd-neg{background:var(--blue);}
+.csd-target{background:var(--yellow);}
+.csd-watch{background:var(--text-2);}
+.csd-none{background:var(--border-lt);}
+.moa-tag{background:#0f2236;border:1px solid var(--border);border-radius:4px;padding:1px 6px;font-size:10px;color:var(--text-2);}
+.phase-bar{display:flex;gap:3px;}
+.pdot{width:7px;height:7px;border-radius:50%;background:var(--border);}
+.pd-approved{background:var(--green);}
+.pd-nda{background:var(--purple);}
+.pd-p3{background:var(--blue);}
+.pd-p2{background:var(--yellow);}
+.pd-p1{background:var(--orange);}
+.at-risk-panel{background:rgba(248,113,113,.06);border:1px solid rgba(248,113,113,.18);border-radius:8px;padding:10px 12px;}
+.atrisk-hd{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--red);margin-bottom:8px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hbrand">
+    <div class="hlogo">GPO</div>
+    <div>
+      <div class="htitle">GPO Strategic Intelligence Platform</div>
+      <div class="hsub">Oncology &amp; Hematology · Member Development · Contract Intelligence · Market Opportunity · Updated April 2025</div>
+    </div>
+  </div>
+  <div class="hright">
+    <div class="hbadge">● LIVE DATA</div>
+    <div class="hsearch" id="searchWrap">
+      <svg width="12" height="12" fill="none" stroke="#3d556e" stroke-width="2" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input type="text" id="searchInput" placeholder="Search drug, manufacturer, MoA..." oninput="renderPipeline()">
+    </div>
+  </div>
+</div>
+
+<div class="nav">
+  <div class="ntab active" onclick="switchPage('overview',this)">📊 Strategic Overview</div>
+  <div class="ntab" onclick="switchPage('members',this)">🏥 Member Intelligence</div>
+  <div class="ntab" onclick="switchPage('pipeline',this)">💊 Pipeline Watch</div>
+  <div class="ntab" onclick="switchPage('market',this)">📈 Market Opportunity</div>
+  <div class="ntab" onclick="switchPage('contracts',this)">📋 Contract Portfolio</div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sb" id="sidebarWrap">
+    <div class="sb-tog" onclick="toggleSB()" id="sbTog" title="Toggle">&#9776;</div>
+    <div class="sb-inner" id="sbInner"></div>
+  </div>
+
+  <div class="main">
+
+    <!-- PAGE: OVERVIEW -->
+    <div class="page active" id="page-overview">
+      <div class="ph">
+        <div class="ph-title">Strategic Overview</div>
+        <div class="ph-desc">GPO-wide performance snapshot · Opportunity prioritization · Market intelligence signals</div>
+      </div>
+      <div class="kpi-row kpi5" style="flex-shrink:0;">
+        <div class="kcard kb"><div class="kc-label">Total Members</div><div class="kc-val" style="color:var(--blue);">312</div><div class="kc-sub">Active member organizations</div><div class="kc-delta d-up">▲ +14 YTD</div></div>
+        <div class="kcard kg"><div class="kc-label">Spend Under Management</div><div class="kc-val" style="color:var(--green);">$2.84B</div><div class="kc-sub">Annual oncology drug spend</div><div class="kc-delta d-up">▲ +11.2%</div></div>
+        <div class="kcard ky"><div class="kc-label">Avg Compliance Rate</div><div class="kc-val" style="color:var(--yellow);">82.4%</div><div class="kc-sub">Contract compliance, all members</div><div class="kc-delta d-up">▲ +1.8pp</div></div>
+        <div class="kcard ko"><div class="kc-label">Contracted Manufacturers</div><div class="kc-val" style="color:var(--orange);">38</div><div class="kc-sub">Active GPO contracts</div><div class="kc-delta d-up">▲ +3 YTD</div></div>
+        <div class="kcard kp"><div class="kc-label">Open Opportunities</div><div class="kc-val" style="color:var(--purple);">7</div><div class="kc-sub">Pipeline contracting + prospects</div><div class="kc-delta d-up">▲ High priority</div></div>
+      </div>
+      <div class="pscroll">
+        <div class="ov-grid">
+          <div class="opp-matrix">
+            <div class="om-title">Strategic Priority Matrix — Therapy Area Positioning</div>
+            <div class="om-labels"><span>Low Contract Penetration →</span><span>→ High Contract Penetration</span></div>
+            <div class="om-body">
+              <div style="writing-mode:vertical-rl;text-orientation:mixed;transform:rotate(180deg);font-size:9px;color:var(--text-4);padding:0 4px 0 0;white-space:nowrap;">▲ Market Growth (CAGR) ▲</div>
+              <div style="flex:1;">
+                <div class="om-grid">
+                  <div class="mq mq-invest">
+                    <div class="mq-label">🚀 Invest &amp; Expand</div>
+                    <div class="mq-items">NSCLC (12.7% CAGR)<br>AML (11.1% CAGR)<br>Prostate Ca (10.9% CAGR)<br>Cholangiocarcinoma</div>
+                  </div>
+                  <div class="mq mq-defend">
+                    <div class="mq-label">🛡️ Defend &amp; Optimize</div>
+                    <div class="mq-items">Multiple Myeloma<br>Chronic Lymphocytic Leukemia<br>Breast Cancer</div>
+                  </div>
+                  <div class="mq mq-enter">
+                    <div class="mq-label">🔍 Selective Entry</div>
+                    <div class="mq-items">Myelofibrosis<br>Bladder Cancer</div>
+                  </div>
+                  <div class="mq mq-harvest">
+                    <div class="mq-label">📊 Harvest &amp; Maintain</div>
+                    <div class="mq-items">Colorectal Cancer<br>Renal Cell Carcinoma</div>
+                  </div>
+                </div>
+                <div class="om-xaxis"><span>Low penetration (opportunity)</span><span>High penetration (defend)</span></div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div class="alert-panel">
+              <div class="ap-title">🔔 Pipeline Contracting Alerts</div>
+              <div class="al-item"><div class="al-dot al-dot-a"></div><div style="flex:1;"><div class="al-drug">Patritumab Deruxtecan (HER3-DXd)</div><div class="al-meta">NSCLC · Daiichi Sankyo/AZ · NDA Filed</div></div><div class="al-tag al-tag-a">ACT NOW &lt;6mo</div></div>
+              <div class="al-item"><div class="al-dot al-dot-a"></div><div style="flex:1;"><div class="al-drug">Datopotamab Deruxtecan (Dato-DXd)</div><div class="al-meta">Breast Cancer · Daiichi Sankyo/AZ · NDA Filed</div></div><div class="al-tag al-tag-a">ACT NOW &lt;6mo</div></div>
+              <div class="al-item"><div class="al-dot al-dot-a"></div><div style="flex:1;"><div class="al-drug">Mezigdomide (CC-92480)</div><div class="al-meta">Multiple Myeloma · BMS · NDA Filed</div></div><div class="al-tag al-tag-a">ACT NOW &lt;6mo</div></div>
+              <div class="al-item"><div class="al-dot al-dot-b"></div><div style="flex:1;"><div class="al-drug">Zanidatamab</div><div class="al-meta">Cholangiocarcinoma · Zymeworks · NDA Filed</div></div><div class="al-tag al-tag-b">TARGET 6-12mo</div></div>
+              <div class="al-item"><div class="al-dot al-dot-b"></div><div style="flex:1;"><div class="al-drug">Alnuctamab</div><div class="al-meta">Multiple Myeloma · BMS · Phase 3</div></div><div class="al-tag al-tag-b">TARGET 6-12mo</div></div>
+              <div class="al-item"><div class="al-dot al-dot-c"></div><div style="flex:1;"><div class="al-drug">Ziftomenib (Menin Inh)</div><div class="al-meta">AML · Kymera · Phase 3</div></div><div class="al-tag al-tag-c">WATCH 12-18mo</div></div>
+              <div class="al-item"><div class="al-dot al-dot-c"></div><div style="flex:1;"><div class="al-drug">Navitoclax + Ruxolitinib</div><div class="al-meta">Myelofibrosis · AbbVie/Incyte · Phase 3</div></div><div class="al-tag al-tag-c">WATCH 12-18mo</div></div>
+            </div>
+          </div>
+        </div>
+        <!-- INTEL FEED + MEMBER MINI SIDE BY SIDE -->
+        <div style="display:grid;grid-template-columns:1.4fr 0.6fr;gap:10px;">
+          <div class="intel-panel">
+            <div class="ip-title">📡 GPO Market Intelligence Feed</div>
+            <div class="ip-item"><div class="ip-icon" style="background:#053a25;">✅</div><div class="ip-body"><div class="ip-text">FDA approved Adagrasib + Cetuximab for KRAS G12C colorectal cancer — new contracting opportunity with Mirati/BMS.<span class="ip-tag ipt-fda">FDA Approval</span></div><div class="ip-date">Apr 2025</div></div></div>
+            <div class="ip-item"><div class="ip-icon" style="background:#1a2d45;">💊</div><div class="ip-body"><div class="ip-text">Bevacizumab biosimilar market share reached 41% in GPO member pool — accelerate conversion program toward 65% target.<span class="ip-tag ipt-biosim">Biosimilar</span></div><div class="ip-date">Mar 2025</div></div></div>
+            <div class="ip-item"><div class="ip-icon" style="background:#1c1545;">🏥</div><div class="ip-body"><div class="ip-text">Southern California Oncology Group (est. $35M spend) has issued RFP — highest-value prospect in current pipeline; respond by May 15.<span class="ip-tag ipt-member">Member Dev</span></div><div class="ip-date">Apr 2025</div></div></div>
+            <div class="ip-item"><div class="ip-icon" style="background:#332600;">📈</div><div class="ip-body"><div class="ip-text">NSCLC market projected to reach $43.9B by 2030 (12.7% CAGR) — ADC wave (HER3-DXd, TROP-2) driving next growth cycle; contract early.<span class="ip-tag ipt-market">Market Intel</span></div><div class="ip-date">Mar 2025</div></div></div>
+            <div class="ip-item"><div class="ip-icon" style="background:#0a2030;">🤝</div><div class="ip-body"><div class="ip-text">Daiichi Sankyo/AstraZeneca ADC partnership expanding — two NDA filings (HER3-DXd, Dato-DXd) create bundled contract opportunity.<span class="ip-tag ipt-contract">Contract Opp</span></div><div class="ip-date">Mar 2025</div></div></div>
+            <div class="ip-item"><div class="ip-icon" style="background:#053a25;">✅</div><div class="ip-body"><div class="ip-text">Imetelstat (Rytelo) approved for myelofibrosis — Geron partnership discussions initiated; low-volume rare disease contract.<span class="ip-tag ipt-fda">FDA Approval</span></div><div class="ip-date">Feb 2025</div></div></div>
+          </div>
+          <div class="mem-mini">
+            <div class="ap-title" style="font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.7px;color:var(--text-4);">Member Snapshot</div>
+            <div class="mm-grid">
+              <div class="mm-card"><div class="mm-label">Platinum Members</div><div class="mm-val" style="color:var(--text-1);">24</div></div>
+              <div class="mm-card"><div class="mm-label">Gold Members</div><div class="mm-val" style="color:var(--yellow);">68</div></div>
+              <div class="mm-card"><div class="mm-label">Silver Members</div><div class="mm-val" style="color:var(--text-2);">142</div></div>
+              <div class="mm-card"><div class="mm-label">Bronze Members</div><div class="mm-val" style="color:var(--orange);">78</div></div>
+              <div class="mm-card"><div class="mm-label">At-Risk Members</div><div class="mm-val" style="color:var(--red);">18</div></div>
+              <div class="mm-card"><div class="mm-label">Prospect Pipeline</div><div class="mm-val" style="color:var(--purple);">5</div></div>
+              <div class="mm-card"><div class="mm-label">New YTD</div><div class="mm-val" style="color:var(--green);">+14</div></div>
+              <div class="mm-card"><div class="mm-label">Est. Prospect Value</div><div class="mm-val" style="color:var(--teal);">$97M</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: MEMBER INTELLIGENCE -->
+    <div class="page" id="page-members">
+      <div class="ph">
+        <div class="ph-title">Member Intelligence</div>
+        <div class="ph-desc">Member portfolio · Tier performance · Compliance analytics · At-risk identification · Prospect pipeline</div>
+      </div>
+      <div class="kpi-row kpi5" style="flex-shrink:0;">
+        <div class="kcard kb"><div class="kc-label">Total Members</div><div class="kc-val" style="color:var(--blue);">312</div><div class="kc-sub">Across all types &amp; tiers</div></div>
+        <div class="kcard kg"><div class="kc-label">Avg Compliance</div><div class="kc-val" style="color:var(--green);">82.4%</div><div class="kc-sub">GPO contract compliance</div></div>
+        <div class="kcard ky"><div class="kc-label">Total Oncology Spend</div><div class="kc-val" style="color:var(--yellow);">$2.84B</div><div class="kc-sub">Under GPO management</div></div>
+        <div class="kcard ko"><div class="kc-label">At-Risk Members</div><div class="kc-val" style="color:var(--red);">18</div><div class="kc-sub">Compliance &lt;70% threshold</div></div>
+        <div class="kcard kp"><div class="kc-label">Prospect Pipeline</div><div class="kc-val" style="color:var(--purple);">$97M</div><div class="kc-sub">Est. potential annual spend</div></div>
+      </div>
+      <div class="fbar" style="flex-shrink:0;">
+        <span class="flabel">Filter:</span>
+        <button class="fbtn active" onclick="setMemFilter('All',this)">All Members</button>
+        <button class="fbtn" onclick="setMemFilter('Community Oncology',this)">Community Oncology</button>
+        <button class="fbtn" onclick="setMemFilter('Health System',this)">Health System</button>
+        <button class="fbtn" onclick="setMemFilter('Academic Medical Center',this)">Academic</button>
+        <button class="fbtn" onclick="setMemFilter('Cancer Center',this)">Cancer Center</button>
+        <button class="fbtn" onclick="setMemFilter('At-Risk',this)">⚠ At-Risk</button>
+      </div>
+      <div class="pscroll">
+        <div class="stitle">Member Portfolio <span class="sc" id="memCount">20 members</span></div>
+        <div class="tbl-wrap" style="margin-bottom:.75rem;">
+          <div class="tbl-scroll" style="max-height:270px;">
+            <table>
+              <thead><tr>
+                <th>Organization</th><th>Type</th><th>Tier</th><th>State(s)</th><th>Annual Spend ($M)</th><th>Compliance</th><th>Trend</th><th>Status</th>
+              </tr></thead>
+              <tbody id="memTable"></tbody>
+            </table>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div>
+            <div class="stitle">⚠ At-Risk Members <span class="sc">Compliance &lt;70%</span></div>
+            <div class="at-risk-panel">
+              <div id="atRiskList"></div>
+            </div>
+          </div>
+          <div>
+            <div class="stitle">🎯 Prospect Pipeline <span class="sc">Member Development</span></div>
+            <div class="tbl-wrap">
+              <div class="tbl-scroll">
+                <table>
+                  <thead><tr><th>Organization</th><th>Type</th><th>State</th><th>Est. Spend ($M)</th><th>Status</th></tr></thead>
+                  <tbody id="prospectTable"></tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: PIPELINE WATCH -->
+    <div class="page" id="page-pipeline">
+      <div class="ph">
+        <div class="ph-title" id="pipelineTitle">Pipeline Watch — All Therapy Areas</div>
+        <div class="ph-desc">Drug pipeline with GPO contracting status · Phase tracking · Early contracting opportunity identification</div>
+      </div>
+      <div class="kpi-row kpi5" style="flex-shrink:0;" id="pipelineStats"></div>
+      <div class="fbar" style="flex-shrink:0;">
+        <span class="flabel">Phase:</span>
+        <button class="fbtn active" onclick="setPhaseFilter('All',this)">All</button>
+        <button class="fbtn" onclick="setPhaseFilter('Approved',this)">Approved</button>
+        <button class="fbtn" onclick="setPhaseFilter('NDA/BLA',this)">NDA/BLA</button>
+        <button class="fbtn" onclick="setPhaseFilter('Phase 3',this)">Phase 3</button>
+        <button class="fbtn" onclick="setPhaseFilter('Phase 2',this)">Phase 2</button>
+        <button class="fbtn" onclick="setPhaseFilter('Phase 1',this)">Phase 1</button>
+        <span class="flabel" style="margin-left:8px;">Contract Status:</span>
+        <button class="fbtn active" onclick="setContractFilter('All',this)">All</button>
+        <button class="fbtn" onclick="setContractFilter('Contracted',this)">✅ Contracted</button>
+        <button class="fbtn" onclick="setContractFilter('In Negotiation',this)">🔵 Negotiating</button>
+        <button class="fbtn" onclick="setContractFilter('Target',this)">🎯 Target</button>
+        <button class="fbtn" onclick="setContractFilter('Watch',this)">👁 Watch</button>
+      </div>
+      <div class="tbl-wrap" style="flex:1;margin-bottom:.75rem;display:flex;flex-direction:column;">
+        <div class="tbl-scroll">
+          <table>
+            <thead><tr>
+              <th>Drug / Brand</th><th>Therapy Area</th><th>Manufacturer</th><th>Mechanism</th><th>Target</th><th>Phase</th><th>Progress</th><th>Contract Status</th><th>Priority</th>
+            </tr></thead>
+            <tbody id="pipelineTable"></tbody>
+          </table>
+          <div style="text-align:center;padding:2rem;color:var(--text-4);font-size:13px;display:none;" id="pipelineNoRes">No drugs match your filters.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PAGE: MARKET OPPORTUNITY -->
+    <div class="page" id="page-market">
+      <div class="ph">
+        <div class="ph-title">Market Opportunity Analysis</div>
+        <div class="ph-desc">Therapy area opportunity scoring · Investment prioritization · Contract gap analysis · CAGR &amp; pipeline density signals</div>
+      </div>
+      <div class="kpi-row kpi4" style="flex-shrink:0;">
+        <div class="kcard kb"><div class="kc-label">Highest CAGR</div><div class="kc-val" style="color:var(--blue);">12.7%</div><div class="kc-sub">NSCLC — primary Invest target</div></div>
+        <div class="kcard kg"><div class="kc-label">Largest Market</div><div class="kc-val" style="color:var(--green);">$30.0B</div><div class="kc-sub">Breast Cancer (2024)</div></div>
+        <div class="kcard ky"><div class="kc-label">Avg Contract Gap</div><div class="kc-val" style="color:var(--yellow);">34%</div><div class="kc-sub">Uncontracted eligible spend</div></div>
+        <div class="kcard kp"><div class="kc-label">Pipeline Drugs to Watch</div><div class="kc-val" style="color:var(--purple);">19</div><div class="kc-sub">Phase 2/3 + NDA pipeline</div></div>
+      </div>
+      <div class="pscroll">
+        <div class="stitle">Therapy Area Opportunity Scoring <span class="sc">Sorted by Opportunity Score</span></div>
+        <div class="ta-grid" id="taGrid"></div>
+      </div>
+    </div>
+
+    <!-- PAGE: CONTRACT PORTFOLIO -->
+    <div class="page" id="page-contracts">
+      <div class="ph">
+        <div class="ph-title">Contract Portfolio Management</div>
+        <div class="ph-desc">Manufacturer partnerships · Compliance by area · Biosimilar conversion · Renewal calendar</div>
+      </div>
+      <div class="kpi-row kpi4" style="flex-shrink:0;">
+        <div class="kcard kg"><div class="kc-label">Portfolio Value</div><div class="kc-val" style="color:var(--green);">$2.84B</div><div class="kc-sub">Total managed spend</div></div>
+        <div class="kcard kb"><div class="kc-label">Contracted Manufacturers</div><div class="kc-val" style="color:var(--blue);">38</div><div class="kc-sub">Active GPO contracts</div></div>
+        <div class="kcard ky"><div class="kc-label">Biosimilar Savings Opportunity</div><div class="kc-val" style="color:var(--yellow);">$187M</div><div class="kc-sub">Est. if conversion targets met</div></div>
+        <div class="kcard ko"><div class="kc-label">Renewals Due &lt;12 Months</div><div class="kc-val" style="color:var(--orange);">7</div><div class="kc-sub">Contract renewal pipeline</div></div>
+      </div>
+      <div class="pscroll">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div class="stitle">🤝 Key Manufacturer Partnerships</div>
+            <div class="tbl-wrap" style="margin-bottom:.75rem;">
+              <div class="tbl-scroll" style="max-height:240px;">
+                <table>
+                  <thead><tr><th>Manufacturer</th><th>Contract Value</th><th>Therapy Areas</th><th>Compliance</th><th>Renewal</th></tr></thead>
+                  <tbody id="mfrTable"></tbody>
+                </table>
+              </div>
+            </div>
+            <div class="stitle">📅 Contract Renewal Calendar <span class="sc">Next 12 Months</span></div>
+            <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;">
+              <div id="renewalList"></div>
+            </div>
+          </div>
+          <div>
+            <div class="stitle">🔄 Biosimilar Conversion Opportunities <span class="sc">Oncology &amp; Supportive Care</span></div>
+            <div class="biosim-grid" id="biosimGrid"></div>
+          </div>
+        </div>
+        <div style="margin-top:.75rem;">
+          <div class="stitle">📊 Contract Compliance by Therapy Area</div>
+          <div style="background:var(--bg-card);border:1px solid var(--border);border-radius:9px;padding:12px 14px;">
+            <div id="complianceChart"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ─── DATA ────────────────────────────────────────────────────────────────────
+
+const therapyAreaGroups = {
+  "Uro-Oncology": ["Prostate Cancer","Bladder Cancer","Renal Cell Carcinoma"],
+  "Hematologic Oncology": ["Multiple Myeloma","Acute Myeloid Leukemia","Chronic Lymphocytic Leukemia"],
+  "Solid Tumors": ["Non-Small Cell Lung Cancer","Breast Cancer","Colorectal Cancer"],
+  "Rare & Orphan": ["Myelofibrosis","Cholangiocarcinoma"]
+};
+
+const members = [
+  {name:"US Oncology Network",type:"Community Oncology",tier:"Platinum",state:"TX/Multi",spend:312.0,compliance:85,trend:"up",status:"Active"},
+  {name:"HCA Healthcare Oncology",type:"Health System",tier:"Platinum",state:"TN/Multi",spend:156.0,compliance:82,trend:"up",status:"Active"},
+  {name:"MD Anderson Cancer Center",type:"Academic Medical Center",tier:"Platinum",state:"TX",spend:102.0,compliance:77,trend:"flat",status:"Active"},
+  {name:"Memorial Sloan Kettering",type:"Academic Medical Center",tier:"Platinum",state:"NY",spend:89.0,compliance:79,trend:"flat",status:"Active"},
+  {name:"OneOncology Network",type:"Community Oncology",tier:"Platinum",state:"Multi",spend:125.0,compliance:88,trend:"up",status:"Active"},
+  {name:"Tennessee Oncology",type:"Community Oncology",tier:"Platinum",state:"TN",spend:48.2,compliance:91,trend:"up",status:"Active"},
+  {name:"Intermountain Health",type:"Health System",tier:"Gold",state:"UT",spend:28.5,compliance:85,trend:"up",status:"Active"},
+  {name:"Pacific Northwest Cancer",type:"Cancer Center",tier:"Gold",state:"WA",spend:24.8,compliance:86,trend:"up",status:"Active"},
+  {name:"Advocates Medical Group",type:"Community Oncology",tier:"Gold",state:"IL",spend:22.1,compliance:89,trend:"up",status:"Active"},
+  {name:"Rocky Mountain Cancer Centers",type:"Community Oncology",tier:"Gold",state:"CO",spend:18.4,compliance:88,trend:"flat",status:"Active"},
+  {name:"Southeast Regional Cancer",type:"Cancer Center",tier:"Gold",state:"GA",spend:15.6,compliance:83,trend:"up",status:"Active"},
+  {name:"Ascension Oncology Division",type:"Health System",tier:"Gold",state:"Multi",spend:19.8,compliance:74,trend:"down",status:"Active"},
+  {name:"Riverside Medical Oncology",type:"Community Oncology",tier:"Silver",state:"CA",spend:8.9,compliance:77,trend:"flat",status:"Active"},
+  {name:"Carolina Blood & Cancer",type:"Community Oncology",tier:"Silver",state:"NC",spend:7.2,compliance:81,trend:"up",status:"Active"},
+  {name:"Baptist Health Oncology",type:"Health System",tier:"Silver",state:"FL",spend:6.8,compliance:72,trend:"down",status:"Active"},
+  {name:"Heartland Cancer Research",type:"Community Oncology",tier:"Silver",state:"IA",spend:4.1,compliance:75,trend:"flat",status:"Active"},
+  {name:"Midwest Cancer Alliance",type:"Community Oncology",tier:"Bronze",state:"KS",spend:2.4,compliance:76,trend:"flat",status:"Active"},
+  {name:"Blue Ridge Cancer Care",type:"Community Oncology",tier:"Bronze",state:"VA",spend:1.8,compliance:67,trend:"down",status:"At-Risk"},
+  {name:"Northern Plains Oncology",type:"Community Oncology",tier:"Bronze",state:"ND",spend:0.9,compliance:58,trend:"down",status:"At-Risk"},
+  {name:"Community Cancer Center NM",type:"Cancer Center",tier:"Bronze",state:"NM",spend:1.2,compliance:62,trend:"down",status:"At-Risk"},
+];
+
+const prospects = [
+  {name:"Southern California Oncology Group",type:"Community Oncology",state:"CA",estSpend:35.0,status:"RFP Sent"},
+  {name:"New England Cancer Alliance",type:"Cancer Center",state:"MA",estSpend:22.0,status:"In Discussion"},
+  {name:"Mountain West Health System",type:"Health System",state:"CO/UT",estSpend:18.0,status:"In Discussion"},
+  {name:"Gulf Coast Cancer Care",type:"Community Oncology",state:"LA",estSpend:12.0,status:"Identified"},
+  {name:"Great Plains Cancer Network",type:"Community Oncology",state:"NE/KS",estSpend:8.0,status:"Identified"},
+];
+
+const drugs = [
+  // Prostate Cancer
+  {name:"Enzalutamide",brand:"Xtandi",company:"Pfizer/Astellas",disease:"Prostate Cancer",moa:"AR Antagonist",target:"Androgen Receptor",phase:"Approved",year:"2012",contract:"Contracted",priority:"—"},
+  {name:"Abiraterone",brand:"Zytiga",company:"J&J",disease:"Prostate Cancer",moa:"CYP17A1 Inhibitor",target:"CYP17A1",phase:"Approved",year:"2011",contract:"Contracted",priority:"—"},
+  {name:"Olaparib",brand:"Lynparza",company:"AstraZeneca/MSD",disease:"Prostate Cancer",moa:"PARP Inhibitor",target:"BRCA1/2",phase:"Approved",year:"2020",contract:"Contracted",priority:"—"},
+  {name:"Darolutamide",brand:"Nubeqa",company:"Bayer/Orion",disease:"Prostate Cancer",moa:"AR Antagonist",target:"Androgen Receptor",phase:"Approved",year:"2019",contract:"Contracted",priority:"—"},
+  {name:"Lutetium-177 PSMA-617",brand:"Pluvicto",company:"Novartis",disease:"Prostate Cancer",moa:"Radioligand Therapy",target:"PSMA",phase:"Approved",year:"2022",contract:"In Negotiation",priority:"High"},
+  {name:"Cabozantinib + Atezo",brand:"—",company:"Exelixis/Genentech",disease:"Prostate Cancer",moa:"MET/VEGFR2 + PD-L1",target:"MET, VEGFR2, PD-L1",phase:"Phase 3",year:"2026",contract:"Watch",priority:"Medium"},
+  {name:"Ziftomenib (PCa)",brand:"—",company:"Kymera Therapeutics",disease:"Prostate Cancer",moa:"AR Degrader (PROTAC)",target:"Androgen Receptor",phase:"Phase 2",year:"2027",contract:"Watch",priority:"Low"},
+  {name:"AMG 509",brand:"—",company:"Amgen",disease:"Prostate Cancer",moa:"BiTE (PSMA×CD3)",target:"PSMA, CD3",phase:"Phase 2",year:"2027",contract:"Watch",priority:"Low"},
+  // Bladder Cancer
+  {name:"Enfortumab Vedotin",brand:"Padcev",company:"Seagen/Astellas",disease:"Bladder Cancer",moa:"ADC (MMAE)",target:"Nectin-4",phase:"Approved",year:"2019",contract:"Contracted",priority:"—"},
+  {name:"Pembrolizumab",brand:"Keytruda",company:"MSD",disease:"Bladder Cancer",moa:"PD-1 Inhibitor",target:"PD-1",phase:"Approved",year:"2017",contract:"Contracted",priority:"—"},
+  {name:"Erdafitinib",brand:"Balversa",company:"J&J",disease:"Bladder Cancer",moa:"FGFR Inhibitor",target:"FGFR2/3",phase:"Approved",year:"2019",contract:"Contracted",priority:"—"},
+  {name:"Disitamab Vedotin",brand:"RC48",company:"RemeGen",disease:"Bladder Cancer",moa:"ADC (MMAE)",target:"HER2",phase:"Phase 3",year:"2026",contract:"Target",priority:"Medium"},
+  // RCC
+  {name:"Nivolumab + Ipilimumab",brand:"Opdivo + Yervoy",company:"BMS",disease:"Renal Cell Carcinoma",moa:"PD-1 + CTLA-4 Inh",target:"PD-1, CTLA-4",phase:"Approved",year:"2018",contract:"Contracted",priority:"—"},
+  {name:"Cabozantinib",brand:"Cabometyx",company:"Exelixis",disease:"Renal Cell Carcinoma",moa:"Multi-Kinase Inhibitor",target:"VEGFR, MET, AXL",phase:"Approved",year:"2016",contract:"Contracted",priority:"—"},
+  {name:"Belzutifan",brand:"Welireg",company:"MSD",disease:"Renal Cell Carcinoma",moa:"HIF-2α Inhibitor",target:"HIF-2α",phase:"Approved",year:"2021",contract:"In Negotiation",priority:"High"},
+  {name:"Pembrolizumab + Lenvatinib",brand:"Keytruda + Lenvima",company:"MSD/Eisai",disease:"Renal Cell Carcinoma",moa:"PD-1 + VEGFR Inh",target:"PD-1, VEGFR",phase:"Approved",year:"2021",contract:"Contracted",priority:"—"},
+  {name:"Belzutifan combos",brand:"—",company:"MSD",disease:"Renal Cell Carcinoma",moa:"HIF-2α + PD-1 Inh",target:"HIF-2α, PD-1",phase:"Phase 3",year:"2026",contract:"Watch",priority:"Low"},
+  // MM
+  {name:"Daratumumab",brand:"Darzalex",company:"J&J",disease:"Multiple Myeloma",moa:"Anti-CD38 mAb",target:"CD38",phase:"Approved",year:"2015",contract:"Contracted",priority:"—"},
+  {name:"Teclistamab",brand:"Tecvayli",company:"J&J",disease:"Multiple Myeloma",moa:"Bispecific (BCMA×CD3)",target:"BCMA, CD3",phase:"Approved",year:"2022",contract:"Contracted",priority:"—"},
+  {name:"Ciltacabtagene autoleucel",brand:"Carvykti",company:"J&J/Legend",disease:"Multiple Myeloma",moa:"BCMA-targeted CAR-T",target:"BCMA",phase:"Approved",year:"2022",contract:"In Negotiation",priority:"High"},
+  {name:"Idecabtagene vicleucel",brand:"Abecma",company:"BMS/2seventy",disease:"Multiple Myeloma",moa:"BCMA-targeted CAR-T",target:"BCMA",phase:"Approved",year:"2021",contract:"In Negotiation",priority:"High"},
+  {name:"Elranatamab",brand:"Elrexfio",company:"Pfizer",disease:"Multiple Myeloma",moa:"Bispecific (BCMA×CD3)",target:"BCMA, CD3",phase:"Approved",year:"2023",contract:"Contracted",priority:"—"},
+  {name:"Mezigdomide",brand:"CC-92480",company:"BMS",disease:"Multiple Myeloma",moa:"CELMoD",target:"IKZF1/3",phase:"NDA/BLA",year:"2025",contract:"In Negotiation",priority:"High"},
+  {name:"Alnuctamab",brand:"—",company:"BMS",disease:"Multiple Myeloma",moa:"Bispecific (BCMA×CD3)",target:"BCMA, CD3",phase:"Phase 3",year:"2025",contract:"Target",priority:"High"},
+  // AML
+  {name:"Venetoclax + Azacitidine",brand:"Venclexta + Vidaza",company:"AbbVie/Genentech",disease:"Acute Myeloid Leukemia",moa:"BCL-2 Inh + HMA",target:"BCL-2",phase:"Approved",year:"2020",contract:"Contracted",priority:"—"},
+  {name:"Gilteritinib",brand:"Xospata",company:"Astellas",disease:"Acute Myeloid Leukemia",moa:"FLT3 Inhibitor",target:"FLT3",phase:"Approved",year:"2018",contract:"Contracted",priority:"—"},
+  {name:"Ivosidenib",brand:"Tibsovo",company:"Servier/Agios",disease:"Acute Myeloid Leukemia",moa:"IDH1 Inhibitor",target:"IDH1",phase:"Approved",year:"2018",contract:"Contracted",priority:"—"},
+  {name:"Revumenib",brand:"Revuforj",company:"Syndax",disease:"Acute Myeloid Leukemia",moa:"Menin Inhibitor",target:"KMT2A, NPM1",phase:"Approved",year:"2023",contract:"In Negotiation",priority:"High"},
+  {name:"Ziftomenib (AML)",brand:"—",company:"Kymera",disease:"Acute Myeloid Leukemia",moa:"Menin Inhibitor",target:"KMT2A",phase:"Phase 3",year:"2026",contract:"Target",priority:"High"},
+  {name:"Uproleselan",brand:"—",company:"GlycoMimetics",disease:"Acute Myeloid Leukemia",moa:"E-Selectin Antagonist",target:"E-Selectin",phase:"Phase 3",year:"2025",contract:"Target",priority:"Medium"},
+  {name:"Bleximenib",brand:"JNJ-75276617",company:"J&J",disease:"Acute Myeloid Leukemia",moa:"Menin Inhibitor",target:"KMT2A, NPM1",phase:"Phase 2",year:"2027",contract:"Watch",priority:"Medium"},
+  // CLL
+  {name:"Ibrutinib",brand:"Imbruvica",company:"J&J/AbbVie",disease:"Chronic Lymphocytic Leukemia",moa:"BTK Inhibitor",target:"BTK",phase:"Approved",year:"2014",contract:"Contracted",priority:"—"},
+  {name:"Acalabrutinib",brand:"Calquence",company:"AstraZeneca",disease:"Chronic Lymphocytic Leukemia",moa:"BTK Inhibitor",target:"BTK",phase:"Approved",year:"2019",contract:"Contracted",priority:"—"},
+  {name:"Venetoclax + Obinutuzumab",brand:"Venclexta + Gazyva",company:"AbbVie/Roche",disease:"Chronic Lymphocytic Leukemia",moa:"BCL-2 + Anti-CD20",target:"BCL-2, CD20",phase:"Approved",year:"2019",contract:"Contracted",priority:"—"},
+  {name:"Zanubrutinib",brand:"Brukinsa",company:"BeiGene",disease:"Chronic Lymphocytic Leukemia",moa:"BTK Inhibitor",target:"BTK",phase:"Approved",year:"2023",contract:"In Negotiation",priority:"High"},
+  {name:"Pirtobrutinib",brand:"Jaypirca",company:"Lilly",disease:"Chronic Lymphocytic Leukemia",moa:"Non-Covalent BTK Inh",target:"BTK",phase:"Approved",year:"2023",contract:"In Negotiation",priority:"High"},
+  {name:"Epcoritamab",brand:"Epkinly",company:"Genmab/AbbVie",disease:"Chronic Lymphocytic Leukemia",moa:"Bispecific (CD20×CD3)",target:"CD20, CD3",phase:"Phase 3",year:"2026",contract:"Target",priority:"Medium"},
+  // NSCLC
+  {name:"Osimertinib",brand:"Tagrisso",company:"AstraZeneca",disease:"Non-Small Cell Lung Cancer",moa:"EGFR Inhibitor (3rd gen)",target:"EGFR T790M",phase:"Approved",year:"2015",contract:"Contracted",priority:"—"},
+  {name:"Alectinib",brand:"Alecensa",company:"Genentech/Roche",disease:"Non-Small Cell Lung Cancer",moa:"ALK Inhibitor",target:"ALK",phase:"Approved",year:"2015",contract:"Contracted",priority:"—"},
+  {name:"Sotorasib",brand:"Lumakras",company:"Amgen",disease:"Non-Small Cell Lung Cancer",moa:"KRAS G12C Inhibitor",target:"KRAS G12C",phase:"Approved",year:"2021",contract:"Contracted",priority:"—"},
+  {name:"Adagrasib",brand:"Krazati",company:"Mirati/BMS",disease:"Non-Small Cell Lung Cancer",moa:"KRAS G12C Inhibitor",target:"KRAS G12C",phase:"Approved",year:"2022",contract:"Contracted",priority:"—"},
+  {name:"Patritumab Deruxtecan",brand:"HER3-DXd",company:"Daiichi Sankyo/AZ",disease:"Non-Small Cell Lung Cancer",moa:"ADC (Topo I Inh)",target:"HER3",phase:"NDA/BLA",year:"2025",contract:"In Negotiation",priority:"High"},
+  {name:"Zipalertinib",brand:"—",company:"Cullinan Oncology",disease:"Non-Small Cell Lung Cancer",moa:"EGFR Exon 20 Inhibitor",target:"EGFR Exon 20",phase:"Phase 3",year:"2026",contract:"Target",priority:"Medium"},
+  // Breast
+  {name:"Trastuzumab Deruxtecan",brand:"Enhertu",company:"Daiichi Sankyo/AZ",disease:"Breast Cancer",moa:"ADC (Topo I Inh)",target:"HER2",phase:"Approved",year:"2019",contract:"Contracted",priority:"—"},
+  {name:"Sacituzumab Govitecan",brand:"Trodelvy",company:"Gilead",disease:"Breast Cancer",moa:"ADC (SN-38)",target:"TROP-2",phase:"Approved",year:"2021",contract:"Contracted",priority:"—"},
+  {name:"Olaparib (BC)",brand:"Lynparza",company:"AstraZeneca/MSD",disease:"Breast Cancer",moa:"PARP Inhibitor",target:"BRCA1/2",phase:"Approved",year:"2018",contract:"Contracted",priority:"—"},
+  {name:"Elacestrant",brand:"Orserdu",company:"Radius/Menarini",disease:"Breast Cancer",moa:"SERD (Oral)",target:"ESR1",phase:"Approved",year:"2023",contract:"In Negotiation",priority:"High"},
+  {name:"Datopotamab Deruxtecan",brand:"Dato-DXd",company:"Daiichi Sankyo/AZ",disease:"Breast Cancer",moa:"ADC (Topo I Inh)",target:"TROP-2",phase:"NDA/BLA",year:"2025",contract:"In Negotiation",priority:"High"},
+  {name:"Capivasertib + Fulvestrant",brand:"Truqap + Faslodex",company:"AstraZeneca",disease:"Breast Cancer",moa:"AKT Inhibitor + SERD",target:"AKT, ER",phase:"Approved",year:"2023",contract:"In Negotiation",priority:"High"},
+  {name:"Inavolisib + Palbociclib",brand:"—",company:"Genentech",disease:"Breast Cancer",moa:"PI3Kα + CDK4/6 Inh",target:"PIK3CA, CDK4/6",phase:"Phase 3",year:"2026",contract:"Target",priority:"Medium"},
+  // CRC
+  {name:"Cetuximab",brand:"Erbitux",company:"Eli Lilly/BMS",disease:"Colorectal Cancer",moa:"Anti-EGFR mAb",target:"EGFR",phase:"Approved",year:"2004",contract:"Contracted",priority:"—"},
+  {name:"Bevacizumab",brand:"Avastin",company:"Genentech/Roche",disease:"Colorectal Cancer",moa:"Anti-VEGF mAb",target:"VEGF-A",phase:"Approved",year:"2004",contract:"Contracted",priority:"—"},
+  {name:"Pembrolizumab (CRC)",brand:"Keytruda",company:"MSD",disease:"Colorectal Cancer",moa:"PD-1 Inhibitor",target:"PD-1, MSI-H",phase:"Approved",year:"2017",contract:"Contracted",priority:"—"},
+  {name:"Adagrasib + Cetuximab",brand:"Krazati + Erbitux",company:"Mirati/BMS + Lilly",disease:"Colorectal Cancer",moa:"KRAS G12C + EGFR mAb",target:"KRAS G12C, EGFR",phase:"Approved",year:"2024",contract:"In Negotiation",priority:"High"},
+  {name:"Fruquintinib",brand:"Fruzaqla",company:"Hutchmed/Takeda",disease:"Colorectal Cancer",moa:"VEGFR Inhibitor",target:"VEGFR1/2/3",phase:"Approved",year:"2023",contract:"In Negotiation",priority:"High"},
+  {name:"RMC-6236",brand:"—",company:"Revolution Medicines",disease:"Colorectal Cancer",moa:"Pan-KRAS Inhibitor",target:"KRAS (multi)",phase:"Phase 2",year:"2027",contract:"Watch",priority:"Medium"},
+  // MF
+  {name:"Ruxolitinib",brand:"Jakafi",company:"Incyte",disease:"Myelofibrosis",moa:"JAK1/2 Inhibitor",target:"JAK1/2",phase:"Approved",year:"2011",contract:"Contracted",priority:"—"},
+  {name:"Fedratinib",brand:"Inrebic",company:"BMS",disease:"Myelofibrosis",moa:"JAK2/FLT3 Inhibitor",target:"JAK2",phase:"Approved",year:"2019",contract:"Contracted",priority:"—"},
+  {name:"Pacritinib",brand:"Vonjo",company:"CTI BioPharma",disease:"Myelofibrosis",moa:"JAK2/IRAK1 Inhibitor",target:"JAK2, IRAK1",phase:"Approved",year:"2022",contract:"In Negotiation",priority:"Medium"},
+  {name:"Momelotinib",brand:"Ojjaara",company:"GSK",disease:"Myelofibrosis",moa:"JAK1/2/ACVR1 Inhibitor",target:"JAK1/2, ACVR1",phase:"Approved",year:"2023",contract:"In Negotiation",priority:"High"},
+  {name:"Imetelstat",brand:"Rytelo",company:"Geron",disease:"Myelofibrosis",moa:"Telomerase Inhibitor",target:"Telomerase",phase:"Approved",year:"2024",contract:"Target",priority:"High"},
+  {name:"Navitoclax + Ruxolitinib",brand:"—",company:"AbbVie/Incyte",disease:"Myelofibrosis",moa:"BCL-2/XL + JAK1/2 Inh",target:"BCL-2/XL, JAK1/2",phase:"Phase 3",year:"2026",contract:"Watch",priority:"Medium"},
+  {name:"Pelabresib + Ruxolitinib",brand:"—",company:"Constellation/MorphoSys",disease:"Myelofibrosis",moa:"BET + JAK1/2 Inh",target:"BRD4, JAK1/2",phase:"Phase 3",year:"2026",contract:"Watch",priority:"Medium"},
+  // CCA
+  {name:"Pemigatinib",brand:"Pemazyre",company:"Incyte",disease:"Cholangiocarcinoma",moa:"FGFR1/2/3 Inhibitor",target:"FGFR2",phase:"Approved",year:"2020",contract:"Contracted",priority:"—"},
+  {name:"Ivosidenib (CCA)",brand:"Tibsovo",company:"Servier/Agios",disease:"Cholangiocarcinoma",moa:"IDH1 Inhibitor",target:"IDH1",phase:"Approved",year:"2021",contract:"Contracted",priority:"—"},
+  {name:"Futibatinib",brand:"Lytgobi",company:"Taiho/Astex",disease:"Cholangiocarcinoma",moa:"FGFR1-4 Inhibitor",target:"FGFR2",phase:"Approved",year:"2022",contract:"Contracted",priority:"—"},
+  {name:"Zanidatamab",brand:"—",company:"Zymeworks/Jazz",disease:"Cholangiocarcinoma",moa:"HER2 Bispecific mAb",target:"HER2",phase:"NDA/BLA",year:"2025",contract:"Target",priority:"High"},
+  {name:"RLY-4008",brand:"—",company:"Relay Therapeutics",disease:"Cholangiocarcinoma",moa:"FGFR2 Selective Inhibitor",target:"FGFR2",phase:"Phase 2",year:"2027",contract:"Watch",priority:"Medium"},
+];
+
+const therapyOpportunities = [
+  {name:"Non-Small Cell Lung Cancer",mkt2024:"$21.5B",mkt2030:"$43.9B",cagr:12.7,pipeline:3,contractGap:35,memberDemand:92,oppScore:95,rec:"Expand",contracted:4,total:7,biosimOpp:"Low"},
+  {name:"Acute Myeloid Leukemia",mkt2024:"$3.2B",mkt2030:"$6.0B",cagr:11.1,pipeline:4,contractGap:40,memberDemand:85,oppScore:91,rec:"Expand",contracted:4,total:7,biosimOpp:"Low"},
+  {name:"Prostate Cancer",mkt2024:"$17.0B",mkt2030:"$32.0B",cagr:10.9,pipeline:4,contractGap:30,memberDemand:90,oppScore:89,rec:"Expand",contracted:4,total:8,biosimOpp:"Low"},
+  {name:"Cholangiocarcinoma",mkt2024:"$1.0B",mkt2030:"$2.0B",cagr:9.7,pipeline:2,contractGap:55,memberDemand:62,oppScore:82,rec:"Enter",contracted:3,total:5,biosimOpp:"Low"},
+  {name:"Multiple Myeloma",mkt2024:"$27.8B",mkt2030:"$35.5B",cagr:8.1,pipeline:3,contractGap:22,memberDemand:95,oppScore:80,rec:"Defend",contracted:5,total:8,biosimOpp:"Low"},
+  {name:"Breast Cancer",mkt2024:"$30.0B",mkt2030:"$46.5B",cagr:7.2,pipeline:3,contractGap:33,memberDemand:88,oppScore:78,rec:"Expand",contracted:4,total:7,biosimOpp:"High"},
+  {name:"Chronic Lymphocytic Leukemia",mkt2024:"$8.5B",mkt2030:"$12.0B",cagr:5.9,pipeline:2,contractGap:20,memberDemand:86,oppScore:71,rec:"Defend",contracted:4,total:6,biosimOpp:"Low"},
+  {name:"Bladder Cancer",mkt2024:"$6.4B",mkt2030:"$10.1B",cagr:5.9,pipeline:1,contractGap:45,memberDemand:72,oppScore:70,rec:"Enter",contracted:3,total:4,biosimOpp:"Low"},
+  {name:"Myelofibrosis",mkt2024:"$952M",mkt2030:"$1.2B",cagr:3.5,pipeline:2,contractGap:38,memberDemand:64,oppScore:62,rec:"Enter",contracted:3,total:7,biosimOpp:"Low"},
+  {name:"Renal Cell Carcinoma",mkt2024:"$4.6B",mkt2030:"$7.3B",cagr:4.2,pipeline:1,contractGap:28,memberDemand:78,oppScore:61,rec:"Maintain",contracted:4,total:5,biosimOpp:"Low"},
+  {name:"Colorectal Cancer",mkt2024:"$13.9B",mkt2030:"$17.9B",cagr:2.3,pipeline:2,contractGap:24,memberDemand:80,oppScore:55,rec:"Maintain",contracted:4,total:6,biosimOpp:"High"},
+];
+
+const manufacturers = [
+  {name:"J&J",color:"#b45309",value:234,areas:["Myeloma","PCa","Bladder","AML"],compliance:89,renewal:"Dec 2026"},
+  {name:"MSD",color:"#1d4ed8",value:186,areas:["NSCLC","Bladder","RCC","CRC"],compliance:91,renewal:"Mar 2027"},
+  {name:"BMS",color:"#059669",value:198,areas:["Myeloma","RCC","AML","MF"],compliance:84,renewal:"Sep 2025"},
+  {name:"AstraZeneca",color:"#7c3aed",value:142,areas:["NSCLC","Breast","CLL"],compliance:87,renewal:"Jun 2026"},
+  {name:"AbbVie",color:"#dc2626",value:88,areas:["CLL","AML","MF"],compliance:86,renewal:"Nov 2025"},
+  {name:"Pfizer",color:"#0284c7",value:122,areas:["PCa","Myeloma","NSCLC"],compliance:83,renewal:"Feb 2027"},
+  {name:"Novartis",color:"#d97706",value:67,areas:["PCa","MF"],compliance:79,renewal:"Oct 2025"},
+  {name:"Gilead",color:"#0f766e",value:72,areas:["Breast","CLL"],compliance:78,renewal:"Jul 2026"},
+  {name:"Daiichi Sankyo",color:"#9333ea",value:45,areas:["NSCLC","Breast"],compliance:82,renewal:"Jan 2026"},
+  {name:"Incyte",color:"#be123c",value:52,areas:["MF","CCA"],compliance:88,renewal:"Mar 2026"},
+];
+
+const biosimOpportunities = [
+  {brand:"Bevacizumab (Avastin)",biosim:"Zirabev / Mvasi",category:"CRC / NSCLC",currentUptake:41,targetUptake:65,savingsMM:"$42M",totalMktMM:280},
+  {brand:"Trastuzumab (Herceptin)",biosim:"Kanjinti / Ogivri",category:"Breast Cancer",currentUptake:48,targetUptake:72,savingsMM:"$31M",totalMktMM:195},
+  {brand:"Rituximab (Rituxan)",biosim:"Riabni / Truxima",category:"CLL / Lymphoma",currentUptake:38,targetUptake:65,savingsMM:"$58M",totalMktMM:320},
+  {brand:"Pegfilgrastim (Neulasta)",biosim:"Ziextenzo / Udenyca",category:"Supportive Care",currentUptake:55,targetUptake:80,savingsMM:"$34M",totalMktMM:210},
+  {brand:"Filgrastim (Neupogen)",biosim:"Zarxio / Nivestym",category:"Supportive Care",currentUptake:63,targetUptake:85,savingsMM:"$14M",totalMktMM:95},
+  {brand:"Epoetin alfa (Procrit)",biosim:"Retacrit",category:"Supportive Care",currentUptake:52,targetUptake:75,savingsMM:"$8M",totalMktMM:62},
+];
+
+const renewals = [
+  {name:"BMS Hematology Portfolio",date:"Sep 2025",urgency:"urgent",value:"$198M",areas:"MM, RCC, AML, MF"},
+  {name:"Novartis Radioligand",date:"Oct 2025",urgency:"urgent",value:"$67M",areas:"Prostate (Pluvicto)"},
+  {name:"AbbVie BTK/BCL-2 Bundle",date:"Nov 2025",urgency:"urgent",value:"$88M",areas:"CLL, AML, MF"},
+  {name:"Daiichi Sankyo ADC",date:"Jan 2026",urgency:"soon",value:"$45M",areas:"NSCLC, Breast (ADCs)"},
+  {name:"Incyte Oncology",date:"Mar 2026",urgency:"soon",value:"$52M",areas:"MF, CCA"},
+  {name:"AstraZeneca Oncology",date:"Jun 2026",urgency:"ok",value:"$142M",areas:"NSCLC, Breast, CLL"},
+  {name:"J&J Oncology Portfolio",date:"Dec 2026",urgency:"ok",value:"$234M",areas:"MM, PCa, Bladder, AML"},
+];
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let activePage = "overview";
+let activeDisease = "All";
+let memFilter = "All";
+let phaseFilter = "All";
+let contractFilter = "All";
+let sbOpen = true;
+
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────────
+function buildSidebar() {
+  let h = `<div class="sb-section">Therapy Areas</div>
+  <div class="sb-item ${activeDisease==='All'?'active':''}" onclick="setDisease('All')"><div class="sb-dot"></div>All Disease States</div>`;
+  for (const [area, diseases] of Object.entries(therapyAreaGroups)) {
+    h += `<div class="sb-section" style="cursor:pointer;">${area}</div>`;
+    diseases.forEach(d => {
+      h += `<div class="sb-sub ${activeDisease===d?'active':''}" onclick="setDisease('${d}')">${d}</div>`;
+    });
+  }
+  document.getElementById("sbInner").innerHTML = h;
+}
+
+function toggleSB() {
+  sbOpen = !sbOpen;
+  document.getElementById("sidebarWrap").classList.toggle("collapsed", !sbOpen);
+  document.getElementById("sbTog").innerHTML = sbOpen ? "&#9776;" : "&#9654;";
+}
+
+function setDisease(d) {
+  activeDisease = d;
+  buildSidebar();
+  if (activePage === "pipeline") renderPipeline();
+  if (activePage === "contracts") renderContracts();
+  if (activePage === "market") renderMarket();
+}
+
+// ─── PAGE SWITCH ─────────────────────────────────────────────────────────────
+function switchPage(page, btn) {
+  activePage = page;
+  document.querySelectorAll(".ntab").forEach(t => t.classList.remove("active"));
+  btn.classList.add("active");
+  document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+  document.getElementById("page-"+page).classList.add("active");
+  document.getElementById("searchWrap").style.display = page === "pipeline" ? "flex" : "none";
+  if (page === "members") renderMembers();
+  if (page === "pipeline") renderPipeline();
+  if (page === "market") renderMarket();
+  if (page === "contracts") renderContracts();
+}
+
+// ─── HELPERS ─────────────────────────────────────────────────────────────────
+const phaseOrder = {"Phase 1":1,"Phase 2":2,"Phase 3":3,"NDA/BLA":4,"Approved":5,"Discontinued":0};
+function phaseBadge(p) {
+  const m = {Approved:"b-approved","Phase 3":"b-phase3","Phase 2":"b-phase2","Phase 1":"b-phase1","NDA/BLA":"b-nda",Discontinued:"b-disc"};
+  return `<span class="badge ${m[p]||'b-phase1'}">${p}</span>`;
+}
+function tierBadge(t) {
+  const m = {Platinum:"b-plat",Gold:"b-gold",Silver:"b-silver",Bronze:"b-bronze"};
+  return `<span class="badge ${m[t]||'b-silver'}">${t}</span>`;
+}
+function statusBadge(s) {
+  if (s === "Active") return `<span class="badge b-active">Active</span>`;
+  if (s === "At-Risk") return `<span class="badge b-atrisk">At-Risk</span>`;
+  return `<span class="badge b-prospect">${s}</span>`;
+}
+function contractBadge(c) {
+  const m = {Contracted:"b-contracted","In Negotiation":"b-neg",Target:"b-target",Watch:"b-watch","Not Targeted":"b-disc"};
+  return `<span class="badge ${m[c]||'b-watch'}">${c}</span>`;
+}
+function contractDot(c) {
+  const cls = {Contracted:"csd-contracted","In Negotiation":"csd-neg",Target:"csd-target",Watch:"csd-watch"}[c] || "csd-none";
+  return `<div class="cs-row"><div class="cs-dot ${cls}"></div>${c}</div>`;
+}
+function priorityBadge(p) {
+  if (p === "High") return `<span class="badge" style="background:rgba(52,211,153,.12);color:var(--green);">High</span>`;
+  if (p === "Medium") return `<span class="badge" style="background:rgba(251,191,36,.12);color:var(--yellow);">Medium</span>`;
+  if (p === "Low") return `<span class="badge b-watch">Low</span>`;
+  return `<span style="color:var(--text-4);font-size:11px;">—</span>`;
+}
+function phaseBar(p) {
+  const steps = ["Phase 1","Phase 2","Phase 3","NDA/BLA","Approved"];
+  const idx = steps.indexOf(p);
+  const cls = {Approved:"pd-approved","NDA/BLA":"pd-nda","Phase 3":"pd-p3","Phase 2":"pd-p2","Phase 1":"pd-p1"}[p] || "";
+  return `<div class="phase-bar">${steps.map((_,i) => `<div class="pdot ${(p!=="Discontinued"&&i<=idx)?cls:""}"></div>`).join("")}</div>`;
+}
+function compBar(pct) {
+  const c = pct >= 85 ? "var(--green)" : pct >= 70 ? "var(--yellow)" : "var(--red)";
+  return `<div style="display:flex;align-items:center;gap:5px;"><div class="cbar-wrap"><div class="cbar" style="width:${pct}%;background:${c};"></div></div><span style="font-size:11px;font-family:var(--mono);color:${c};">${pct}%</span></div>`;
+}
+function trendIcon(t) {
+  if (t === "up") return `<span class="trend t-up">↑</span>`;
+  if (t === "down") return `<span class="trend t-dn">↓</span>`;
+  return `<span class="trend t-flat">→</span>`;
+}
+function scoreColor(s) {
+  return s >= 85 ? "var(--green)" : s >= 70 ? "var(--blue)" : s >= 55 ? "var(--yellow)" : "var(--orange)";
+}
+function recBadge(r) {
+  const m = {Expand:"ta-expand",Defend:"ta-defend",Enter:"ta-enter",Maintain:"ta-maintain"};
+  const labels = {Expand:"🚀 Expand",Defend:"🛡️ Defend",Enter:"🔍 Enter",Maintain:"📊 Maintain"};
+  return `<span class="ta-rec ${m[r]||'ta-maintain'}">${labels[r]||r}</span>`;
+}
+
+// ─── MEMBER PAGE ─────────────────────────────────────────────────────────────
+function setMemFilter(f, btn) {
+  memFilter = f;
+  document.querySelectorAll("#page-members .fbtn").forEach(b => b.classList.remove("active"));
+  btn.classList.add("active");
+  renderMembers();
+}
+
+function renderMembers() {
+  let filtered = members.filter(m => {
+    if (memFilter === "All") return true;
+    if (memFilter === "At-Risk") return m.status === "At-Risk" || m.compliance < 70;
+    return m.type === memFilter;
+  });
+  document.getElementById("memCount").textContent = filtered.length + " members";
+  const tbody = document.getElementById("memTable");
+  tbody.innerHTML = filtered.map(m => `<tr>
+    <td><div class="td1">${m.name}</div></td>
+    <td style="font-size:11px;">${m.type}</td>
+    <td>${tierBadge(m.tier)}</td>
+    <td style="font-size:11px;color:var(--text-3);">${m.state}</td>
+    <td style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--text-1);">$${m.spend.toFixed(1)}M</td>
+    <td>${compBar(m.compliance)}</td>
+    <td>${trendIcon(m.trend)}</td>
+    <td>${statusBadge(m.status)}</td>
+  </tr>`).join("");
+
+  // At-risk
+  const atRisk = members.filter(m => m.compliance < 70 || m.status === "At-Risk");
+  document.getElementById("atRiskList").innerHTML = atRisk.map(m => `
+    <div class="ren-item">
+      <div class="ren-dot ren-urgent"></div>
+      <div style="flex:1;">
+        <div class="ren-name">${m.name}</div>
+        <div class="ren-meta">${m.type} · ${m.state} · $${m.spend.toFixed(1)}M spend</div>
+      </div>
+      <div style="font-size:11px;font-family:var(--mono);color:var(--red);">${m.compliance}% compliance</div>
+    </div>`).join("");
+
+  // Prospects
+  document.getElementById("prospectTable").innerHTML = prospects.map(p => `<tr>
+    <td><div class="td1">${p.name}</div></td>
+    <td style="font-size:11px;">${p.type}</td>
+    <td style="font-size:11px;color:var(--text-3);">${p.state}</td>
+    <td style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--purple);">$${p.estSpend.toFixed(1)}M</td>
+    <td>${statusBadge(p.status)}</td>
+  </tr>`).join("");
+}
+
+// ─── PIPELINE PAGE ────────────────────────────────────────────────────────────
+function setPhaseFilter(f, btn) {
+  phaseFilter = f;
+  document.querySelectorAll("#page-pipeline .fbtn").forEach(b => b.classList.remove("active"));
+  // Only reset phase buttons
+  const phaseBtns = ["All","Approved","NDA/BLA","Phase 3","Phase 2","Phase 1"];
+  document.querySelectorAll("#page-pipeline .fbtn").forEach(b => {
+    if (phaseBtns.includes(b.textContent.trim()) || b.textContent.trim() === "All") {
+      b.classList.remove("active");
+    }
+  });
+  btn.classList.add("active");
+  renderPipeline();
+}
+function setContractFilter(f, btn) {
+  contractFilter = f;
+  renderPipeline();
+  // re-mark active on the correct contract filter button - handled by re-querying
+}
+
+function renderPipeline() {
+  const q = document.getElementById("searchInput").value.toLowerCase();
+  let filtered = drugs.filter(d => {
+    const mD = activeDisease === "All" || d.disease === activeDisease;
+    const mP = phaseFilter === "All" || d.phase === phaseFilter;
+    const mC = contractFilter === "All" || d.contract === contractFilter;
+    const mQ = !q || [d.name,d.brand,d.company,d.moa,d.target,d.disease].some(v=>v.toLowerCase().includes(q));
+    return mD && mP && mC && mQ;
+  });
+
+  // Stats
+  const c = {Approved:0,"NDA/BLA":0,"Phase 3":0,"Phase 2":0,"Phase 1":0};
+  drugs.filter(d => activeDisease==="All"||d.disease===activeDisease).forEach(d => { if(c[d.phase]!==undefined) c[d.phase]++; });
+  document.getElementById("pipelineStats").innerHTML = `
+    <div class="kcard kb"><div class="kc-label">Approved</div><div class="kc-val" style="color:var(--green);font-size:1.1rem;">${c.Approved}</div></div>
+    <div class="kcard kb"><div class="kc-label">NDA/BLA Filed</div><div class="kc-val" style="color:var(--purple);font-size:1.1rem;">${c["NDA/BLA"]}</div></div>
+    <div class="kcard kb"><div class="kc-label">Phase 3</div><div class="kc-val" style="color:var(--blue);font-size:1.1rem;">${c["Phase 3"]}</div></div>
+    <div class="kcard kb"><div class="kc-label">Phase 2</div><div class="kc-val" style="color:var(--yellow);font-size:1.1rem;">${c["Phase 2"]}</div></div>
+    <div class="kcard kb"><div class="kc-label">Phase 1</div><div class="kc-val" style="color:var(--orange);font-size:1.1rem;">${c["Phase 1"]}</div></div>`;
+
+  document.getElementById("pipelineTitle").textContent = `Pipeline Watch — ${activeDisease === "All" ? "All Therapy Areas" : activeDisease}`;
+
+  if (!filtered.length) {
+    document.getElementById("pipelineTable").innerHTML = "";
+    document.getElementById("pipelineNoRes").style.display = "block";
+    return;
+  }
+  document.getElementById("pipelineNoRes").style.display = "none";
+  document.getElementById("pipelineTable").innerHTML = filtered.map(d => `<tr>
+    <td><div class="td1">${d.name}</div><div class="tdsub">${d.brand}</div></td>
+    <td style="font-size:11px;color:var(--text-2);">${d.disease}</td>
+    <td style="font-size:11px;color:var(--text-2);">${d.company}</td>
+    <td><span class="moa-tag">${d.moa}</span></td>
+    <td style="font-size:11px;color:var(--text-3);">${d.target}</td>
+    <td>${phaseBadge(d.phase)}</td>
+    <td>${phaseBar(d.phase)}</td>
+    <td>${contractDot(d.contract)}</td>
+    <td>${priorityBadge(d.priority)}</td>
+  </tr>`).join("");
+}
+
+// ─── MARKET OPPORTUNITY ───────────────────────────────────────────────────────
+function renderMarket() {
+  const scored = [...therapyOpportunities].sort((a,b) => b.oppScore - a.oppScore);
+  document.getElementById("taGrid").innerHTML = scored.map(ta => {
+    const sc = scoreColor(ta.oppScore);
+    const contractPct = Math.round(ta.contracted / ta.total * 100);
+    return `<div class="ta-card">
+      <div class="ta-top">
+        <div>
+          <div class="ta-name">${ta.name}</div>
+          <div class="ta-mkt">${ta.mkt2024} → ${ta.mkt2030}</div>
+        </div>
+        ${recBadge(ta.rec)}
+      </div>
+      <div class="ta-metrics">
+        <div class="ta-metric"><div class="ta-ml">CAGR</div><div class="ta-mv" style="color:var(--green);">${ta.cagr}%</div></div>
+        <div class="ta-metric"><div class="ta-ml">Pipeline Drugs</div><div class="ta-mv" style="color:var(--blue);">${ta.pipeline} late-stage</div></div>
+        <div class="ta-metric"><div class="ta-ml">Contract Gap</div><div class="ta-mv" style="color:var(--yellow);">${ta.contractGap}%</div></div>
+        <div class="ta-metric"><div class="ta-ml">Member Demand</div><div class="ta-mv" style="color:var(--teal);">${ta.memberDemand}/100</div></div>
+      </div>
+      <div class="ta-score-row"><div class="ta-score-label">Opp Score</div><div class="ta-sbar-wrap"><div class="ta-sbar" style="width:${ta.oppScore}%;background:${sc};"></div></div><div class="ta-sval" style="color:${sc};">${ta.oppScore}</div></div>
+      <div class="ta-score-row"><div class="ta-score-label">Member Demand</div><div class="ta-sbar-wrap"><div class="ta-sbar" style="width:${ta.memberDemand}%;background:var(--blue);"></div></div><div class="ta-sval" style="color:var(--blue);">${ta.memberDemand}</div></div>
+      <div class="ta-contract-row">
+        <div class="ta-cl">Contracted: <strong style="color:var(--text-1);">${ta.contracted}/${ta.total} drugs</strong></div>
+        <div class="ta-cv" style="color:${contractPct >= 70 ? 'var(--green)' : contractPct >= 50 ? 'var(--yellow)' : 'var(--orange)'};">${contractPct}% coverage</div>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+// ─── CONTRACT PORTFOLIO ───────────────────────────────────────────────────────
+function renderContracts() {
+  // Manufacturer table
+  document.getElementById("mfrTable").innerHTML = manufacturers.map(m => `<tr>
+    <td><div style="display:flex;align-items:center;gap:7px;">
+      <div class="mfr-icon" style="background:${m.color};">${m.name.substring(0,2)}</div>
+      <div class="td1">${m.name}</div>
+    </div></td>
+    <td style="font-family:var(--mono);font-size:12px;font-weight:600;color:var(--green);">$${m.value}M</td>
+    <td style="font-size:10px;color:var(--text-3);">${m.areas.join(", ")}</td>
+    <td>${compBar(m.compliance)}</td>
+    <td style="font-size:11px;font-family:var(--mono);color:var(--text-2);">${m.renewal}</td>
+  </tr>`).join("");
+
+  // Renewal list
+  document.getElementById("renewalList").innerHTML = renewals.map(r => `
+    <div class="ren-item">
+      <div class="ren-dot ${r.urgency === 'urgent' ? 'ren-urgent' : r.urgency === 'soon' ? 'ren-soon' : 'ren-ok'}"></div>
+      <div style="flex:1;">
+        <div class="ren-name">${r.name}</div>
+        <div class="ren-meta">${r.areas} · ${r.value}</div>
+      </div>
+      <div class="ren-date" style="color:${r.urgency==='urgent'?'var(--red)':r.urgency==='soon'?'var(--yellow)':'var(--green)'};">${r.date}</div>
+    </div>`).join("");
+
+  // Biosimilar
+  document.getElementById("biosimGrid").innerHTML = biosimOpportunities.map(b => `
+    <div class="biosim-card">
+      <div class="bs-top">
+        <div><div class="bs-drug">${b.brand}</div><div class="bs-cat">${b.category}</div></div>
+        <div class="bs-save">${b.savingsMM} savings</div>
+      </div>
+      <div class="bs-row">
+        <div class="bs-rl">Current</div>
+        <div class="bs-bg"><div class="bs-fill" style="width:${b.currentUptake}%;background:var(--orange);"></div></div>
+        <div class="bs-pct" style="color:var(--orange);">${b.currentUptake}%</div>
+      </div>
+      <div class="bs-row">
+        <div class="bs-rl">Target</div>
+        <div class="bs-bg"><div class="bs-fill" style="width:${b.targetUptake}%;background:var(--green);"></div></div>
+        <div class="bs-pct" style="color:var(--green);">${b.targetUptake}%</div>
+      </div>
+      <div class="bs-upside">↑ ${b.targetUptake - b.currentUptake}pp conversion potential · Total mkt $${b.totalMktMM}M</div>
+    </div>`).join("");
+
+  // Compliance chart by therapy area
+  const compData = [
+    {area:"Prostate Cancer",compliance:87,spend:"$312M"},
+    {area:"Multiple Myeloma",compliance:84,spend:"$498M"},
+    {area:"NSCLC",compliance:86,spend:"$542M"},
+    {area:"Breast Cancer",compliance:79,spend:"$418M"},
+    {area:"CLL",compliance:88,spend:"$284M"},
+    {area:"AML",compliance:81,spend:"$196M"},
+    {area:"Colorectal",compliance:82,spend:"$234M"},
+    {area:"RCC",compliance:83,spend:"$158M"},
+    {area:"Bladder Cancer",compliance:76,spend:"$124M"},
+    {area:"Myelofibrosis",compliance:80,spend:"$48M"},
+    {area:"Cholangiocarcinoma",compliance:78,spend:"$28M"},
+  ].sort((a,b)=>b.compliance-a.compliance);
+
+  document.getElementById("complianceChart").innerHTML = compData.map(d => {
+    const c = d.compliance >= 85 ? "var(--green)" : d.compliance >= 78 ? "var(--blue)" : "var(--yellow)";
+    return `<div style="display:flex;align-items:center;gap:10px;margin-bottom:7px;">
+      <div style="font-size:11px;color:var(--text-2);width:160px;flex-shrink:0;">${d.area}</div>
+      <div style="flex:1;height:6px;background:#0f2236;border-radius:3px;overflow:hidden;">
+        <div style="width:${d.compliance}%;height:100%;background:${c};border-radius:3px;"></div>
+      </div>
+      <div style="font-size:11px;font-family:var(--mono);font-weight:600;color:${c};width:36px;text-align:right;">${d.compliance}%</div>
+      <div style="font-size:10px;color:var(--text-3);width:50px;text-align:right;">${d.spend}</div>
+    </div>`;
+  }).join("");
+}
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+buildSidebar();
+document.getElementById("searchWrap").style.display = "none";
+</script>
+</body>
+</html>
