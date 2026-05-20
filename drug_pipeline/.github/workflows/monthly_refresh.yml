@@ -1,0 +1,112 @@
+name: Monthly Oncology Pipeline Refresh
+
+on:
+  schedule:
+    - cron: "0 6 1 * *"
+
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Pipeline mode"
+        required: true
+        default: "full"
+        type: choice
+        options:
+          - full
+          - ai-only
+          - trials-only
+          - report-only
+      disease:
+        description: "Specific disease state (optional, leave blank for all)"
+        required: false
+        type: string
+
+env:
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  refresh-pipeline:
+    name: Refresh Oncology Intelligence Pipeline
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    defaults:
+      run:
+        working-directory: drug_pipeline
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python ${{ env.PYTHON_VERSION }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: drug_pipeline/requirements.txt
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Restore database cache
+        uses: actions/cache@v4
+        with:
+          path: drug_pipeline/data/oncology_pipeline.db
+          key: oncology-db-${{ github.run_number }}
+          restore-keys: |
+            oncology-db-
+
+      - name: Run pipeline (scheduled)
+        if: github.event_name == 'schedule'
+        run: python main.py
+
+      - name: Run pipeline (manual dispatch)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          MODE="${{ github.event.inputs.mode }}"
+          DISEASE="${{ github.event.inputs.disease }}"
+          ARGS=""
+          if [ "$MODE" = "ai-only" ];     then ARGS="--ai-only"; fi
+          if [ "$MODE" = "trials-only" ]; then ARGS="--trials-only"; fi
+          if [ "$MODE" = "report-only" ]; then ARGS="--report-only"; fi
+          if [ -n "$DISEASE" ]; then ARGS="$ARGS --disease \"$DISEASE\""; fi
+          eval "python main.py $ARGS"
+
+      - name: Commit updated artifacts
+        working-directory: ${{ github.workspace }}
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add drug_pipeline/data/oncology_pipeline.db drug_pipeline/reports/ drug_pipeline/data/pipeline.log || true
+          git diff --staged --quiet || git commit -m "chore: monthly pipeline refresh $(date +'%Y-%m-%d')"
+          git push
+
+      - name: Upload HTML report
+        uses: actions/upload-artifact@v4
+        with:
+          name: oncology-pipeline-report-${{ github.run_number }}
+          path: drug_pipeline/reports/*.html
+          retention-days: 90
+
+      - name: Upload Markdown report
+        uses: actions/upload-artifact@v4
+        with:
+          name: oncology-pipeline-markdown-${{ github.run_number }}
+          path: drug_pipeline/reports/*.md
+          retention-days: 90
+
+      - name: Upload database snapshot
+        uses: actions/upload-artifact@v4
+        with:
+          name: oncology-pipeline-db-${{ github.run_number }}
+          path: drug_pipeline/data/oncology_pipeline.db
+          retention-days: 90
+
+      - name: Write job summary
+        if: always()
+        run: |
+          echo "## Oncology Pipeline Refresh" >> $GITHUB_STEP_SUMMARY
+          echo "**Run date:** $(date +'%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          python main.py --summary 2>/dev/null || true
